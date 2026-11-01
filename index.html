@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1F3864">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:Arial,sans-serif;margin:0;padding:14px 14px 90px;background:#f2f4f7;color:#222}
+  h2{margin:0 0 10px;font-size:18px}
+  h3{margin:14px 0 6px;font-size:15px}
+  .card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  label{display:block;font-size:12px;color:#555;margin:10px 0 4px}
+  input,select,textarea{width:100%;font-size:17px;padding:11px;border:1px solid #bbb;border-radius:8px;background:#fff;font-family:inherit}
+  button{font-size:16px;padding:11px 14px;border:0;border-radius:8px;background:#1F3864;color:#fff;font-weight:bold;font-family:inherit}
+  button.full{width:100%;margin-top:14px}
+  button.sm{font-size:13px;padding:7px 10px;margin:6px 6px 0 0}
+  button.ghost{background:#e8ebf1;color:#1F3864}
+  button.danger{background:#d93025}
+  button:disabled{opacity:.6}
+  .seg{display:flex;gap:8px}.seg button{flex:1;background:#e8ebf1;color:#1F3864}.seg button.on{background:#1F3864;color:#fff}
+  .big{font-size:25px;font-weight:bold}
+  .sub{font-size:12px;color:#666}
+  .track{background:#e6e8ec;border-radius:6px;height:11px;overflow:hidden;margin:7px 0}
+  .fill{height:100%;border-radius:6px}
+  .g{background:#2e9e4f}.a{background:#e6a100}.r{background:#d93025}
+  .row{margin:11px 0}.rowtop{display:flex;justify-content:space-between;font-size:14px;gap:8px}
+  .ins{font-size:14px;padding:8px 10px;border-radius:8px;margin:6px 0}
+  .ins.bad{background:#fde7e5;color:#9c1c12}.ins.warn{background:#fff4d6;color:#7a5600}.ins.ok{background:#e4f5ea;color:#17683a}
+  .banner{padding:12px;border-radius:10px;margin-bottom:12px;font-weight:bold;font-size:15px}
+  .banner.g{background:#e4f5ea;color:#17683a}.banner.r{background:#fde7e5;color:#9c1c12}
+  .ent{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #eee;font-size:14px}
+  .ent:last-child{border-bottom:0}.ent .l{min-width:0}.ent b{white-space:nowrap}
+  details{border-top:1px solid #eee;padding:8px 0}summary{font-weight:bold;font-size:14px}
+  .ok{color:#1b7a2e}.err{color:#b00020}
+  #tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fff;border-top:1px solid #ddd;padding-bottom:env(safe-area-inset-bottom)}
+  #tabs button{flex:1;background:none;color:#777;border-radius:0;padding:12px 4px;font-size:13px}
+  #tabs button.on{color:#1F3864;border-top:3px solid #1F3864;padding-top:9px}
+  #toast{position:fixed;left:14px;right:14px;bottom:78px;background:#222;color:#fff;padding:12px;border-radius:8px;font-size:14px;display:none;z-index:30}
+  #toast.err{background:#b00020}
+  #ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:20}
+  #ov .sheet{background:#fff;width:100%;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
+  #bar{background:#fff4d6;color:#7a5600;padding:9px 12px;border-radius:8px;margin-bottom:12px;font-size:13px}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="bar" class="hide"></div>
+<div id="boot" class="sub">Loading...</div>
+
+<div id="sec-home" class="hide">
+  <div class="card">
+    <div class="seg"><button id="tExp" class="on" onclick="setType('expense')">Expense</button><button id="tInc" onclick="setType('income')">Income</button></div>
+    <label>Date</label><input type="date" id="date">
+    <div id="catWrap"><label>Category</label><select id="cat"></select></div>
+    <div id="srcWrap" class="hide"><label>Source</label><input type="text" id="src" placeholder="e.g. bonus, side work"></div>
+    <div id="detWrap"><label>Detail</label><input type="text" id="detail" placeholder="e.g. lunch, fuel"></div>
+    <label>Amount</label><input type="number" id="amt" inputmode="decimal" step="any" placeholder="0">
+    <button class="full" id="save" onclick="saveEntry()">Save</button>
+  </div>
+  <div id="banner"></div>
+  <div class="card" id="dash"></div>
+  <div class="card" id="homeGoals"></div>
+</div>
+
+<div id="sec-hist" class="hide"></div>
+<div id="sec-split" class="hide"></div>
+<div id="sec-goals" class="hide"></div>
+
+<div id="tabs" class="hide">
+  <button id="tb-home" onclick="showTab('home')">Home</button>
+  <button id="tb-hist" onclick="showTab('hist')">History</button>
+  <button id="tb-split" onclick="showTab('split')">Split</button>
+  <button id="tb-goals" onclick="showTab('goals')">Goals</button>
+</div>
+<div id="toast"></div>
+<div id="ov"><div class="sheet" id="sheet"></div></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwpmfqGZFpUqhpjcO81t15dHwehJzs7lLw_qM6zymBSRx-NmFXt2ehMrwRmaoVy8VpY/exec';
+let KEY = localStorage.getItem('bk') || '';
+(function(){const q=new URLSearchParams(location.search);if(q.get('k')){KEY=q.get('k');localStorage.setItem('bk',KEY);history.replaceState(null,'',location.pathname);}})();
+let ROLE = '', OWNER = false, inited = false;
+let S = {categories: [], summary: null, split: null, goals: []};
+let type = 'expense', E = {}, tabNow = 'home';
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function n(x){return Math.round(x).toLocaleString('en-US');}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function cls(p){return p>1?'r':(p>=0.8?'a':'g');}
+function toast(m,bad){const t=$('toast');t.textContent=m;t.className=bad?'err':'';t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',3500);}
+const Q_ACTIONS={addEntry:1,splitAdd:1};
+function getQ(){try{return JSON.parse(localStorage.getItem('bq')||'[]');}catch(e){return [];}}
+function setQ(q){localStorage.setItem('bq',JSON.stringify(q));updateBar();}
+function uuid(){return (window.crypto&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2)).replace(/-/g,'').slice(0,32);}
+function updateBar(){
+  const q=getQ().length,off=!navigator.onLine,b=$('bar');
+  if(!q&&!off){b.classList.add('hide');return;}
+  b.classList.remove('hide');
+  b.textContent=(off?'Offline. ':'')+(q?q+(q>1?' entries are':' entry is')+' waiting to sync.':'You can still add entries; they will sync later.');
+}
+function post(action,p){
+  return fetch(API,{method:'POST',body:JSON.stringify({key:KEY,action:action,p:p})}).then(r=>r.json()).then(j=>{
+    if(!j.ok){const e=new Error(j.error);e.server=true;throw e;}return j.data;});
+}
+function applyLocal(action,p){
+  if(action==='addEntry'&&S.summary){
+    const a=Number(p.amount),s=S.summary;
+    if(p.type==='income'){s.income+=a;s.extraIncome+=a;s.left+=a;}
+    else{s.totalSpent+=a;s.remaining-=a;s.left-=a;const c=s.categories.find(x=>x.name===p.category);if(c)c.spent+=a;}
+    renderHome();
+  } else if(action==='splitAdd'&&S.split){
+    const t=Number(p.total),half=Math.round(t/2*100)/100;
+    const M={i_paid_split:['owes_me',half],b_paid_split:['i_owe',half],owes_me:['owes_me',t],i_owe:['i_owe',t]}[p.mode];
+    S.split.open.unshift({id:'tmp'+p.cid,date:p.date||today(),dir:M[0],amount:M[1],note:p.note||'',by:ROLE});
+    S.split.net+=M[0]==='owes_me'?M[1]:-M[1];
+    renderSplit();renderHome();
+  }
+}
+function enqueue(action,payload,ok){
+  const q=getQ();q.push({action:action,payload:payload});setQ(q);
+  applyLocal(action,payload);
+  if(ok)ok({queued:true,msg:'Saved on this phone. Will sync when online.'});
+}
+let flushing=false;
+function flush(){
+  if(flushing||!KEY||!getQ().length)return;
+  flushing=true;
+  (function next(){
+    const q=getQ();
+    if(!q.length){flushing=false;updateBar();refresh();return;}
+    post(q[0].action,q[0].payload).then(()=>{setQ(getQ().slice(1));next();})
+      .catch(e=>{
+        if(e.server){toast('Entry dropped: '+e.message,true);setQ(getQ().slice(1));next();}
+        else{flushing=false;updateBar();}
+      });
+  })();
+}
+function refresh(){if(KEY&&!getQ().length)call('boot',{},init,null,'bc');}
+function call(action,payload,ok,btn,cacheKey){
+  payload=payload||{};
+  if(btn)btn.disabled=true;
+  const done=()=>{if(btn)btn.disabled=false;};
+  if(Q_ACTIONS[action]){
+    payload.cid=uuid();
+    if(getQ().length){enqueue(action,payload,ok);done();flush();return;}
+    post(action,payload).then(r=>{done();if(ok)ok(r);})
+      .catch(e=>{done();if(e.server)toast(e.message,true);else enqueue(action,payload,ok);});
+    return;
+  }
+  post(action,payload).then(r=>{done();if(cacheKey)localStorage.setItem(cacheKey,JSON.stringify(r));if(ok)ok(r);})
+    .catch(e=>{
+      done();
+      if(e.server){toast(e.message,true);return;}
+      const c=cacheKey&&localStorage.getItem(cacheKey);
+      if(c){updateBar();if(ok)ok(JSON.parse(c),true);}
+      else toast('No internet. This needs a connection.',true);
+    });
+}
+
+// ---------- modal
+function modal(o){
+  let h='<h2>'+esc(o.title)+'</h2>';
+  o.fields.forEach(f=>{
+    h+='<label>'+esc(f.label)+'</label>';
+    if(f.options) h+='<select id="m_'+f.id+'">'+f.options.map(x=>'<option'+(x===f.value?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';
+    else h+='<input id="m_'+f.id+'" type="'+(f.type||'text')+'" value="'+esc(f.value)+'" '+(f.type==='number'?'inputmode="decimal" step="any"':'')+'>';
+  });
+  h+='<button class="full" id="m_save">'+esc(o.saveText||'Save')+'</button>';
+  if(o.del) h+='<button class="full danger" id="m_del">Delete</button>';
+  h+='<button class="full ghost" onclick="closeModal()">Cancel</button>';
+  $('sheet').innerHTML=h; $('ov').style.display='flex';
+  const val=()=>{const v={};o.fields.forEach(f=>v[f.id]=$('m_'+f.id).value);return v;};
+  $('m_save').onclick=()=>o.save(val(),$('m_save'));
+  if(o.del) $('m_del').onclick=()=>{if(confirm('Delete this?'))o.del($('m_del'));};
+}
+function closeModal(){$('ov').style.display='none';}
+
+// ---------- tabs
+function showTab(t,keep){
+  tabNow=t;
+  ['home','hist','split','goals'].forEach(x=>{$('sec-'+x).classList.toggle('hide',x!==t);const b=$('tb-'+x);if(b)b.classList.toggle('on',x===t);});
+  if(!keep){if(t==='hist')loadRecent();window.scrollTo(0,0);}
+}
+
+// ---------- home
+function setType(t){
+  type=t;
+  $('tExp').className=t==='expense'?'on':'';$('tInc').className=t==='income'?'on':'';
+  $('catWrap').classList.toggle('hide',t!=='expense');$('detWrap').classList.toggle('hide',t!=='expense');$('srcWrap').classList.toggle('hide',t!=='income');
+}
+function saveEntry(){
+  const p={type:type,date:$('date').value,category:$('cat').value,source:$('src').value.trim(),detail:$('detail').value,amount:$('amt').value};
+  if(!(Number(p.amount)>0))return toast('Enter an amount above 0',true);
+  if(!p.date)return toast('Pick a date',true);
+  if(type==='expense'&&!p.category)return toast('Pick a category',true);
+  if(type==='income'&&!p.source)return toast('Enter a source',true);
+  call('addEntry',p,r=>{if(r.summary)S.summary=r.summary;renderHome();toast(r.msg);$('detail').value='';$('src').value='';$('amt').value='';},$('save'));
+}
+function bannerHtml(onclick){
+  const sp=S.split; if(!sp||!sp.net)return '';
+  const t=sp.net>0?esc(sp.other)+' owes you '+n(sp.net):'You owe '+esc(sp.other)+' '+n(-sp.net);
+  return '<div class="banner '+(sp.net>0?'g':'r')+'" '+(onclick?'onclick="showTab(\'split\')"':'')+'>'+t+'</div>';
+}
+function renderHome(){
+  $('banner').innerHTML=bannerHtml(true);
+  const s=S.summary; if(!s)return;
+  const pct=s.totalBudget>0?s.totalSpent/s.totalBudget:0;
+  let h='<h2>'+esc(s.period)+'</h2><div class="sub">'+esc(s.range)+' &middot; '+s.daysLeft+' days left</div>';
+  h+='<div class="big" style="margin-top:8px">'+n(s.totalSpent)+' <span class="sub">of '+n(s.totalBudget)+'</span></div>';
+  h+='<div class="track"><div class="fill '+cls(pct)+'" style="width:'+Math.min(100,pct*100)+'%"></div></div>';
+  h+='<div class="sub">'+(s.remaining>=0?n(s.remaining)+' left':n(-s.remaining)+' over')+' &middot; '+Math.round(pct*100)+'% used</div>';
+  if(s.savingsGoal>0){
+    const sp=s.left/s.savingsGoal;
+    h+='<div style="margin-top:12px" class="rowtop"><span>Left from income</span><span>'+n(s.left)+' / goal '+n(s.savingsGoal)+'</span></div>'+
+       '<div class="track"><div class="fill '+(sp>=1?'g':(sp>=0.5?'a':'r')+'')+'" style="width:'+Math.max(0,Math.min(100,sp*100))+'%"></div></div>';
+  }
+  if(s.insights.length)h+='<div style="margin-top:10px">'+s.insights.map(i=>'<div class="ins '+i.type+'">'+esc(i.text)+'</div>').join('')+'</div>';
+  const cats=s.categories.slice().sort((a,b)=>{const pa=a.budget>0?a.spent/a.budget:(a.spent>0?9:0),pb=b.budget>0?b.spent/b.budget:(b.spent>0?9:0);return pb-pa;});
+  h+='<h3>By category</h3>';
+  cats.forEach(c=>{const p=c.budget>0?c.spent/c.budget:(c.spent>0?2:0);
+    h+='<div class="row"><div class="rowtop"><span>'+esc(c.name)+'</span><span>'+n(c.spent)+' / '+n(c.budget)+'</span></div><div class="track"><div class="fill '+cls(p)+'" style="width:'+Math.min(100,p*100)+'%"></div></div></div>';});
+  $('dash').innerHTML=h;
+  const act=S.goals.filter(g=>g.status!=='Done').slice(0,3);
+  $('homeGoals').style.display=act.length?'block':'none';
+  $('homeGoals').innerHTML='<h2 onclick="showTab(\'goals\')">Goals</h2>'+act.map(goalBar).join('');
+}
+function goalBar(g){
+  const p=g.target>0?g.saved/g.target:0;
+  let due='';if(g.due){due=g.daysLeft<0?'overdue by '+(-g.daysLeft)+' days':g.daysLeft+' days left';}
+  return '<div class="row"><div class="rowtop"><span>'+esc(g.name)+'</span><span>'+n(g.saved)+' / '+n(g.target)+'</span></div><div class="track"><div class="fill '+(p>=1?'g':(g.daysLeft!=null&&g.daysLeft<0?'r':'a'))+'" style="width:'+Math.min(100,p*100)+'%"></div></div>'+(due?'<div class="sub">'+due+'</div>':'')+'</div>';
+}
+
+// ---------- history
+function loadRecent(){
+  call('recent',{},r=>{
+    E={};
+    const ent=(e,kind)=>{E[kind+':'+e.row]=e;
+      return '<div class="ent" onclick="editEntry(\''+kind+'\','+e.row+')"><div class="l"><div>'+esc(kind==='log'?(e.detail||e.cat):e.source)+'</div><div class="sub">'+esc(e.date)+(kind==='log'?' &middot; '+esc(e.cat):'')+'</div></div><b>'+n(e.amount)+'</b></div>';};
+    let h='<div class="card"><h2>Latest entries</h2><div class="sub">Tap an entry to edit or delete</div>'+(r.latest.map(e=>ent(e,'log')).join('')||'<div class="sub">Nothing yet</div>')+'</div>';
+    h+='<div class="card"><h2>Last 5 by category</h2>'+r.groups.map(g=>'<details><summary>'+esc(g.cat)+'</summary>'+g.entries.map(e=>ent(e,'log')).join('')+'</details>').join('')+'</div>';
+    h+='<div class="card"><h2>Extra income</h2>'+(r.income.map(e=>ent(e,'inc')).join('')||'<div class="sub">None logged</div>')+'</div>';
+    $('sec-hist').innerHTML=h;
+  },null,'rc');
+}
+function editEntry(kind,row){
+  const e=E[kind+':'+row]; if(!e)return;
+  const orig=e.date+'|'+e.amount;
+  const after=r=>{S.summary=r.summary;closeModal();renderHome();loadRecent();toast('Done');};
+  if(kind==='log') modal({title:'Edit expense',fields:[
+    {id:'date',label:'Date',type:'date',value:e.date},{id:'category',label:'Category',options:S.categories.indexOf(e.cat)<0?[e.cat].concat(S.categories):S.categories,value:e.cat},
+    {id:'detail',label:'Detail',value:e.detail},{id:'amount',label:'Amount',type:'number',value:e.amount}],
+    save:(v,b)=>call('updateEntry',{kind:'log',row:row,orig:orig,date:v.date,category:v.category,detail:v.detail,amount:v.amount},after,b),
+    del:b=>call('deleteEntry',{kind:'log',row:row,orig:orig},after,b)});
+  else modal({title:'Edit income',fields:[
+    {id:'date',label:'Date',type:'date',value:e.date},{id:'category',label:'Source',value:e.source},{id:'amount',label:'Amount',type:'number',value:e.amount}],
+    save:(v,b)=>call('updateEntry',{kind:'inc',row:row,orig:orig,date:v.date,category:v.category,amount:v.amount},after,b),
+    del:b=>call('deleteEntry',{kind:'inc',row:row,orig:orig},after,b)});
+}
+
+// ---------- split
+const MODES=[['i_paid_split','I paid, split equally'],['b_paid_split','__ paid, split equally'],['owes_me','__ owes me (full amount)'],['i_owe','I owe __ (full amount)']];
+function splitLine(e,other){return e.dir==='owes_me'?esc(other)+' owes you '+n(e.amount):'You owe '+esc(other)+' '+n(e.amount);}
+function renderSplit(){
+  const sp=S.split,other=sp.other;
+  let h=(OWNER?'':'<h2>Split with '+esc(other)+'</h2>')+bannerHtml(false);
+  h+='<div class="card"><h2>Add</h2><label>What happened</label><select id="sMode">'+MODES.map(m=>'<option value="'+m[0]+'">'+esc(m[1].replace('__',other))+'</option>').join('')+'</select>'+
+     '<label>Total amount</label><input id="sAmt" type="number" inputmode="decimal" step="any" placeholder="0" oninput="splitPreview()">'+
+     '<label>Note</label><input id="sNote" type="text" placeholder="e.g. groceries, rent"><label>Date</label><input id="sDate" type="date" value="'+today()+'">'+
+     '<div class="sub" id="sPrev" style="margin-top:8px"></div><button class="full" id="sBtn" onclick="splitAdd()">Add</button></div>';
+  h+='<div class="card"><h2>Open</h2>';
+  if(!sp.open.length)h+='<div class="sub">All settled</div>';
+  sp.open.forEach(e=>{
+    h+='<div class="ent"><div class="l"><div>'+splitLine(e,other)+'</div><div class="sub">'+esc(e.date)+(e.note?' &middot; '+esc(e.note):'')+' &middot; by '+(e.by===ROLE?'you':esc(other))+(e.id.indexOf('tmp')===0?' &middot; waiting to sync':'')+'</div>'+
+       (OWNER&&e.id.indexOf('tmp')!==0?'<button class="sm" onclick="splitSettle(\''+e.id+'\')">Settled</button><button class="sm ghost" onclick="splitEdit(\''+e.id+'\')">Edit</button><button class="sm danger" onclick="splitDel(\''+e.id+'\')">Delete</button>':'')+'</div></div>';});
+  if(OWNER&&sp.open.length)h+='<button class="full ghost" onclick="splitSettleAll()">Settle everything</button>';
+  h+='</div>';
+  if(sp.settled.length)h+='<div class="card"><details><summary>Recently settled</summary>'+sp.settled.map(e=>'<div class="ent"><div class="l">'+splitLine(e,other)+'<div class="sub">'+esc(e.date)+(e.note?' &middot; '+esc(e.note):'')+'</div></div></div>').join('')+'</details></div>';
+  $('sec-split').innerHTML=h; splitPreview();
+}
+function splitPreview(){
+  const o=$('sPrev');if(!o)return;const a=parseFloat($('sAmt').value)||0,m=$('sMode').value,other=S.split.other;
+  if(!a){o.textContent='';return;}
+  const half=Math.round(a/2*100)/100;
+  o.textContent=m==='i_paid_split'?other+' owes you '+n(half):m==='b_paid_split'?'You owe '+other+' '+n(half):m==='owes_me'?other+' owes you '+n(a):'You owe '+other+' '+n(a);
+}
+function setSplit(r){if(r.split)S.split=r.split;renderSplit();renderHome();}
+function splitAdd(){
+  const p={mode:$('sMode').value,total:$('sAmt').value,note:$('sNote').value,date:$('sDate').value};
+  if(!(Number(p.total)>0))return toast('Enter an amount above 0',true);
+  call('splitAdd',p,r=>{setSplit(r);toast(r.queued?r.msg:'Added');},$('sBtn'));
+}
+function splitSettle(id){call('splitSettle',{id:id},r=>{setSplit(r);toast('Marked settled');});}
+function splitSettleAll(){if(confirm('Mark everything as settled?'))call('splitSettle',{all:true},r=>{setSplit(r);toast('All settled');});}
+function splitDel(id){if(confirm('Delete this entry?'))call('splitDelete',{id:id},setSplit);}
+function splitEdit(id){
+  const e=S.split.open.find(x=>x.id===id);if(!e)return;
+  modal({title:'Edit amount / note',fields:[{id:'amount',label:'Amount owed',type:'number',value:e.amount},{id:'note',label:'Note',value:e.note}],
+    save:(v,b)=>call('splitUpdate',{id:id,amount:v.amount,note:v.note},r=>{closeModal();setSplit(r);},b)});
+}
+
+// ---------- goals
+function renderGoals(){
+  const act=S.goals.filter(g=>g.status!=='Done'),done=S.goals.filter(g=>g.status==='Done');
+  let h='<div class="card"><h2>Goals</h2><button class="full" style="margin-top:0" onclick="goalForm()">+ New goal</button></div>';
+  h+=act.map(g=>'<div class="card">'+goalBar(g)+'<button class="sm" onclick="goalMoney(\''+g.id+'\')">+ Add money</button><button class="sm ghost" onclick="goalForm(\''+g.id+'\')">Edit</button><button class="sm ghost" onclick="goalDone(\''+g.id+'\',true)">Mark done</button></div>').join('');
+  if(!act.length)h+='<div class="card sub">No active goals. Add one, e.g. a watch or a sweater with a target amount.</div>';
+  if(done.length)h+='<div class="card"><details><summary>Done ('+done.length+')</summary>'+done.map(g=>'<div class="ent"><div class="l">'+esc(g.name)+'<div class="sub">'+n(g.saved)+' / '+n(g.target)+'</div><button class="sm ghost" onclick="goalDone(\''+g.id+'\',false)">Reopen</button></div></div>').join('')+'</details></div>';
+  $('sec-goals').innerHTML=h;
+}
+function setGoals(r){S.goals=r.goals;renderGoals();renderHome();}
+function goalForm(id){
+  const g=id?S.goals.find(x=>x.id===id):{name:'',target:'',due:''};
+  modal({title:id?'Edit goal':'New goal',fields:[{id:'name',label:'Goal',value:g.name},{id:'target',label:'Target amount',type:'number',value:g.target},{id:'due',label:'Due date (optional)',type:'date',value:g.due}],
+    save:(v,b)=>call('goalSave',{id:id,name:v.name,target:v.target,due:v.due},r=>{closeModal();setGoals(r);},b),
+    del:id?(b=>call('goalDelete',{id:id},r=>{closeModal();setGoals(r);},b)):null});
+}
+function goalMoney(id){
+  modal({title:'Add money to goal',saveText:'Add',fields:[{id:'amount',label:'Amount (use minus to remove)',type:'number',value:''}],
+    save:(v,b)=>call('goalAdd',{id:id,amount:v.amount},r=>{closeModal();setGoals(r);},b)});
+}
+function goalDone(id,d){call('goalStatus',{id:id,done:d},setGoals);}
+
+// ---------- start
+function init(r,fromCache){
+  Object.assign(S,r);
+  ROLE=S.role||ROLE;OWNER=ROLE==='owner';
+  $('boot').style.display='none';
+  if(!$('date').value)$('date').value=today();
+  if(!inited){inited=true;tabNow=OWNER?'home':'split';}
+  if(OWNER){
+    const cv=$('cat').value;
+    $('cat').innerHTML=S.categories.map(c=>'<option>'+esc(c)+'</option>').join('');
+    if(cv&&S.categories.indexOf(cv)>=0)$('cat').value=cv;
+    $('tabs').classList.remove('hide');
+    renderHome();renderGoals();renderSplit();
+  } else renderSplit();
+  showTab(tabNow,true);
+  getQ().forEach(it=>applyLocal(it.action,it.payload));
+  updateBar();
+}
+if(!KEY){$('boot').textContent='Open your personal link once (the one ending in ?k=...). After that the app remembers you.';}
+else{
+  const c=localStorage.getItem('bc');
+  if(c){try{init(JSON.parse(c),true);}catch(e){}}
+  if(getQ().length)flush();else call('boot',{},init,null,'bc');
+}
+window.addEventListener('online',()=>{updateBar();flush();});
+window.addEventListener('offline',updateBar);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&KEY){if(getQ().length)flush();else refresh();}});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+updateBar();
+</script>
+</body>
+</html>
