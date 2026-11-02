@@ -1,7 +1,7 @@
 {
   "name": "Hisab",
   "short_name": "Hisab",
-  "description": "Financial planning for work and leisure",
+  "description": "Plan together. Spend wisely.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

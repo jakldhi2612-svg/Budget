@@ -113,7 +113,7 @@
 <div id="splash" aria-hidden="true">
   <svg viewBox="0 0 84 84"><rect class="b b1" x="12" y="44" width="16" height="28" rx="4" fill="#8FB4FF"/><rect class="b b2" x="34" y="28" width="16" height="44" rx="4" fill="#8FB4FF"/><rect class="b b3" x="56" y="12" width="16" height="60" rx="4" fill="#34c789"/></svg>
   <div class="word">Hisab</div>
-  <div class="tag">Financial planning for work and leisure</div>
+  <div class="tag">Plan together. Spend wisely.</div>
 </div>
 <header id="hdr">
   <button class="iconbtn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -149,7 +149,7 @@ const API = 'https://script.google.com/macros/s/AKfycbwpmfqGZFpUqhpjcO81t15dHweh
 let KEY = localStorage.getItem('bk') || '';
 (function(){const q=new URLSearchParams(location.search);if(q.get('k')){KEY=q.get('k');localStorage.setItem('bk',KEY);history.replaceState(null,'',location.pathname);}})();
 let ROLE='', OWNER=false, inited=false;
-let S={categories:[],summary:null,goals:[],members:[],salaryDay:28,name:'',me:'',people:[],ledger:{people:[],open:[],settled:[]},fgoals:[]};
+let S={categories:[],summary:null,goals:[],members:[],salaryDay:28,name:'',me:'',firstBudgetMonth:'',people:[],ledger:{people:[],open:[],settled:[]},fgoals:[]};
 let type='expense', E={}, R=null;
 let nav={sec:'dash',tabs:{exp:'add',inc:'add',split:'overview',fgoals:'active',ana:'overview'}};
 
@@ -269,7 +269,7 @@ const MEMBER_SECS=[['split','Family Split'],['fgoals','Family Goals']];
 function secs(){return OWNER?OWNER_SECS:MEMBER_SECS;}
 function secName(id){return (secs().find(s=>s[0]===id)||[0,''])[1];}
 function tabsFor(sec){
-  if(sec==='split')return [['overview','Overview']].concat(othersOf().map(p=>['p:'+p,p])).concat([['all','Everyone']]);
+  if(sec==='split')return [['overview','Overview']].concat(othersOf().map(p=>['p:'+p,p])).concat(OWNER?[['all','Everyone']]:[]);
   if(sec==='fgoals')return [['active','Active'],['done','Completed']];
   if(!OWNER)return [];
   if(sec==='exp')return [['add','Add'],['latest','Latest'],['cats','By category']];
@@ -339,6 +339,7 @@ function mountAdd(mode){
 function render(){
   if(!inited)return;
   if(!secs().some(s=>s[0]===nav.sec))nav.sec=OWNER?'home':'split';
+  if(!OWNER&&nav.tabs.split==='all')nav.tabs.split='overview';
   const sp=curPerson();if(sp&&othersOf().indexOf(sp)<0)nav.tabs.split='overview';
   stashAdd();buildDrawer();renderHeader();renderTabs();
   ({home:vHome,dash:vDash,exp:vExp,inc:vInc,split:vSplit,fgoals:vFG,goals:vGoals,ana:vAna})[nav.sec]($('view'));
@@ -413,13 +414,16 @@ function vExp(v){
   if(t==='latest')v.innerHTML='<div class="card"><h2>Latest entries</h2><div class="sub">Tap an entry to edit or delete it</div>'+(R.latest.map(e=>entRow(e,'log')).join('')||'<div class="empty">No expenses yet. Add your first one from the Add tab.</div>')+'</div>';
   else v.innerHTML='<div class="card"><h2>Last 5 in each category</h2>'+(R.groups.map(g=>'<details><summary>'+esc(g.cat)+'</summary>'+g.entries.map(e=>entRow(e,'log')).join('')+'</details>').join('')||'<div class="empty">No expenses yet.</div>')+'</div>';
 }
+function salaryInfoCard(){
+  const s=S.summary;if(!s)return '';
+  return '<div class="card"><div class="sub">Salary for '+esc(s.period)+'</div><div class="big">'+n(s.salary)+'</div><div class="sub">'+(s.salaryConfirmed?'Confirmed. Expected '+n(s.salaryExpected)+'.':(s.salaryDue?'Not confirmed yet. Using the expected amount from Setup.':'Expected amount from Setup. You can confirm it after salary day.'))+' Other income this month: '+n(s.extraIncome)+'.</div><button class="sm" data-sal="other">'+(s.salaryConfirmed?'Change amount':'Enter amount received')+'</button></div>';
+}
 function vInc(v){
   const t=curTab();
-  if(t==='add'){v.innerHTML='<div id="addSlot"></div>';mountAdd('income');return;}
+  if(t==='add'){v.innerHTML=salaryInfoCard()+'<div id="addSlot"></div>';mountAdd('income');return;}
   if(!R){v.innerHTML='<div class="card empty">Loading...</div>';return;}
   E={};
-  const s=S.summary,base=s?s.income-s.extraIncome:0;
-  v.innerHTML='<div class="card"><div class="sub">Monthly salary (from Setup)</div><div class="big">'+n(base)+'</div><div class="sub">Other income this salary month: '+n(s?s.extraIncome:0)+'</div></div>'+
+  v.innerHTML=salaryInfoCard()+
     '<div class="card"><h2>Other income</h2><div class="sub">Tap an entry to edit or delete it</div>'+(R.income.map(e=>entRow(e,'inc')).join('')||'<div class="empty">No other income logged.</div>')+'</div>';
 }
 function editEntry(kind,row){
@@ -500,7 +504,7 @@ function vSplit(v){
   let h=familyBanner(false)+'<div class="card"><h2>Your balances</h2>'+
     (others.map(p=>{const x=pairNet(p);return '<div class="ent" data-go-p="'+esc(p)+'" style="cursor:pointer"><div class="l"><div>'+esc(p)+'</div><div class="sub">'+(x>0?esc(p)+' owes you':x<0?'You owe '+esc(p):'Settled')+'</div></div><b class="'+(x>0?'t-g':x<0?'t-r':'')+'">'+(x===0?'0':n(Math.abs(x)))+'</b></div>';}).join('')||'<div class="empty">No other family members yet</div>')+
     '<div class="sub" style="margin-top:8px">Green means they owe you. Red means you owe them. Tap a name for details.</div></div>';
-  const pos=familyPos().filter(x=>Math.round(x.net)!==0);
+  const pos=OWNER?familyPos().filter(x=>Math.round(x.net)!==0):[];
   if(pos.length)h+='<div class="card"><h2>Whole family</h2>'+pos.map(x=>'<div class="rowtop" style="padding:5px 0"><span>'+esc(x.name===S.me?'You':x.name)+'</span><span class="'+(x.net>0?'t-g':'t-r')+'">'+(x.net>0?'is owed ':'owes ')+n(Math.abs(x.net))+'</span></div>').join('')+'<div class="sub" style="margin-top:6px">Each person\'s overall position across all open entries.</div></div>';
   h+='<div class="card"><h2>Latest open entries</h2>'+(L.open.slice(0,8).map(e=>ledgerRow(e,false)).join('')||'<div class="empty">Nothing open</div>')+'</div>';
   v.innerHTML=h;
@@ -560,8 +564,21 @@ function goalForm(id){
 }
 
 // ---------- Home
+function salaryCard(){
+  const s=S.summary;
+  if(!s||s.salaryConfirmed||!s.salaryDue)return '';
+  return '<div class="card" style="border-color:var(--wn)"><h2>Confirm your salary</h2><div class="sub">Salary day has passed for '+esc(s.period)+'. Expected '+n(s.salaryExpected)+'. If you took unpaid leave, the amount can be lower.</div>'+
+    '<div class="grid2" style="margin-top:10px"><button data-sal="same">Received '+n(s.salaryExpected)+'</button><button class="ghost" data-sal="other">A different amount</button></div></div>';
+}
+$('view').addEventListener('click',e=>{
+  const b=e.target.closest('[data-sal]');if(!b||!OWNER)return;
+  const s=S.summary,done=r=>{S.summary=r.summary;closeModal();render();toast('Salary saved');};
+  if(b.dataset.sal==='same')call('salarySet',{amount:s.salaryExpected},done,b);
+  else modal({title:'Salary received for '+s.period,fields:[{id:'amount',label:'Amount that reached your account',type:'number',value:s.salaryConfirmed?s.salary:''}],
+    save:(v,bb)=>call('salarySet',{amount:v.amount},done,bb)});
+});
 function vHome(v){
-  const s=S.summary;let h='';
+  const s=S.summary;let h=salaryCard();
   if(s){
     const pct=s.totalBudget>0?s.totalSpent/s.totalBudget:0,perDay=s.daysLeft>0&&s.remaining>0?s.remaining/s.daysLeft:0;
     h+='<div class="card"><div class="sub">Left to spend this month</div><div class="big '+(s.remaining<0?'t-r':'')+'">'+(s.remaining<0?'-':'')+n(Math.abs(s.remaining))+'</div>'+
@@ -631,7 +648,7 @@ function fgContrib(id){
 
 // ---------- Analytics
 const AN={preset:'month',cf:'',ct:'',data:null,key:'',cat:'',ents:null,stale:false,loading:false};
-const PRESETS=[['week','This week'],['month','This month'],['lastmonth','Last month'],['3m','Last 3 months'],['6m','Last 6 months'],['year','This year'],['custom','Custom range']];
+const PRESETS=[['week','This week'],['month','This month'],['lastmonth','Last month'],['3m','Last 3 months'],['6m','Last 6 months'],['year','This budget year'],['custom','Custom range']];
 function cycOf(x,D){const q=ds(x).split('-').map(Number);let y=q[0],m=q[1];if(q[2]<D){m--;if(m<1){m=12;y--;}}return {cs:u(y,m,D),ce:u(y,m+1,D)};}
 function cycBack(x,k,D){let c=cycOf(x,D);for(let i=0;i<k;i++)c=cycOf(c.cs-1,D);return c;}
 // returns {from,to,prevFrom,prevTo,note} as day numbers, comparing the same number of elapsed days when the period is still running
@@ -644,7 +661,13 @@ function rangeFor(preset,D,cf,ct){
   if(preset==='month'){const c=cycOf(T,D),pc=cycBack(T,1,D);return mk(c.cs,c.ce-1,pc.cs,pc.ce-1,salNote);}
   if(preset==='lastmonth'){const c=cycBack(T,1,D),pc=cycBack(T,2,D);return mk(c.cs,c.ce-1,pc.cs,pc.ce-1,salNote);}
   if(preset==='3m'||preset==='6m'){const k=preset==='3m'?3:6;const c0=cycOf(T,D),cs=cycBack(T,k-1,D),pc=cycBack(T,2*k-1,D),pe=cycBack(T,k,D);return mk(cs.cs,c0.ce-1,pc.cs,pe.ce-1,salNote+' Includes the current salary month.');}
-  if(preset==='year'){const y=new Date(T*864e5).getUTCFullYear();return mk(u(y,1,1),u(y,12,31),u(y-1,1,1),u(y-1,12,31),'Calendar year (1 Jan to 31 Dec), not salary months.');}
+  if(preset==='year'){
+    const ce=ds(cycOf(T,D).ce).split('-').map(Number),ly=ce[0],lm=ce[1];
+    const q=(S.firstBudgetMonth||'').split('-').map(Number),fy=q[0]||ly,fm=q[1]||lm;
+    const idx=Math.max(0,Math.floor(((ly-fy)*12+(lm-fm))/12)),sy=fy+idx,sm=fm;
+    const endM=sm===1?12:sm-1,endY=sm===1?sy:sy+1;
+    return mk(u(sy,sm-1,D),u(sy+1,sm-1,D)-1,u(sy-1,sm-1,D),u(sy,sm-1,D)-1,'Budget year '+MON[sm-1]+' '+sy+' to '+MON[endM-1]+' '+endY+' (salary months). It starts again by itself every year.');
+  }
   if(!cf||!ct||ct<cf)return null;
   const from=dn(cf),to=dn(ct),L=Math.max(Math.min(to,T)-from+1,1);
   return {from:from,to:to,prevFrom:from-L,prevTo:from-1,note:'Custom calendar dates.'};
