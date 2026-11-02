@@ -1,6 +1,7 @@
 {
-  "name": "Budget Tracker",
-  "short_name": "Budget",
+  "name": "Hisab",
+  "short_name": "Hisab",
+  "description": "Financial planning for work and leisure",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

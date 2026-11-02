@@ -1,5 +1,5 @@
 // Caches the app files so the page opens offline. Data calls are never cached here.
-const CACHE = 'budget-v2';
+const CACHE = 'hisab-v3';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable.png'];
 
 self.addEventListener('install', e => {

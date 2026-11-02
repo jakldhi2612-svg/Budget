@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Budget</title>
+<title>Hisab</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0e1525">
 <meta name="mobile-web-app-capable" content="yes">
@@ -90,17 +90,39 @@
   #toast.err{background:var(--er);color:#fff}
   #ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:60}
   #ov .sheet{background:var(--s1);border:1px solid var(--bd);width:100%;max-width:520px;max-height:90vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px}
+  #hdr .brandbar{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:.4px}
+  #hdr .logo{width:28px;height:28px;border-radius:8px}
+  .pagehead{margin:2px 0 14px}.pagehead h1{font-size:24px;line-height:1.2}.pagehead .sub{margin-top:3px;font-size:13px}
+  .stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--s2);margin:8px 0}
+  .stack div{height:100%}
+  .chips{display:flex;flex-wrap:wrap;gap:4px 12px;margin:2px 0 6px}
+  .chips span{font-size:12px;color:var(--mu);display:inline-flex;align-items:center;gap:5px}
+  #splash{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 38%,#17284f 0%,#0e1525 68%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;transition:opacity .45s ease,visibility .45s}
+  #splash.out{opacity:0;visibility:hidden}
+  #splash svg{width:92px;height:92px}
+  #splash .b{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);animation:grow .6s cubic-bezier(.2,.9,.3,1.15) forwards}
+  #splash .b1{animation-delay:.1s}#splash .b2{animation-delay:.25s}#splash .b3{animation-delay:.4s}
+  #splash .word{font-size:42px;font-weight:800;letter-spacing:1.5px;opacity:0;transform:translateY(10px);animation:rise .6s .6s ease forwards}
+  #splash .tag{color:var(--mu);font-size:14px;max-width:290px;opacity:0;animation:fade .7s 1s ease forwards}
+  @keyframes grow{to{transform:scaleY(1)}}@keyframes rise{to{opacity:1;transform:none}}@keyframes fade{to{opacity:1}}
+  @media(prefers-reduced-motion:reduce){#splash .b,#splash .word,#splash .tag{animation:none;opacity:1;transform:none}}
   .hide{display:none!important}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <svg viewBox="0 0 84 84"><rect class="b b1" x="12" y="44" width="16" height="28" rx="4" fill="#8FB4FF"/><rect class="b b2" x="34" y="28" width="16" height="44" rx="4" fill="#8FB4FF"/><rect class="b b3" x="56" y="12" width="16" height="60" rx="4" fill="#34c789"/></svg>
+  <div class="word">Hisab</div>
+  <div class="tag">Financial planning for work and leisure</div>
+</div>
 <header id="hdr">
   <button class="iconbtn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-  <div class="ht"><h1 id="pageTitle">Budget</h1><div class="sub" id="pageSub"></div></div>
+  <div class="brandbar"><img class="logo" src="icon-192.png" alt=""><span>Hisab</span></div>
 </header>
 <nav id="ctabs" class="hide" aria-label="Section options"></nav>
 <div id="bar" class="hide"></div>
 <main id="main">
+  <div class="pagehead"><h1 id="pageTitle"></h1><div class="sub" id="pageSub"></div></div>
   <div id="boot" class="sub">Loading...</div>
   <div id="view"></div>
 </main>
@@ -127,9 +149,9 @@ const API = 'https://script.google.com/macros/s/AKfycbwpmfqGZFpUqhpjcO81t15dHweh
 let KEY = localStorage.getItem('bk') || '';
 (function(){const q=new URLSearchParams(location.search);if(q.get('k')){KEY=q.get('k');localStorage.setItem('bk',KEY);history.replaceState(null,'',location.pathname);}})();
 let ROLE='', OWNER=false, inited=false;
-let S={categories:[],summary:null,split:null,goals:[],members:[],salaryDay:28,name:''};
+let S={categories:[],summary:null,goals:[],members:[],salaryDay:28,name:'',me:'',people:[],ledger:{people:[],open:[],settled:[]},fgoals:[]};
 let type='expense', E={}, R=null;
-let nav={sec:'dash',tabs:{exp:'add',inc:'add',split:'overview',ana:'overview'}};
+let nav={sec:'dash',tabs:{exp:'add',inc:'add',split:'overview',fgoals:'active',ana:'overview'}};
 
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -146,7 +168,7 @@ function fd(s){const q=String(s).split('-').map(Number);return q[2]+' '+MON[q[1]
 function fds(s){const q=String(s).split('-').map(Number);return q[2]+' '+MON[q[1]-1];}
 
 // ---------- network, offline queue
-const Q_ACTIONS={addEntry:1,splitAdd:1};
+const Q_ACTIONS={addEntry:1,ledgerAdd:1};
 function getQ(){try{return JSON.parse(localStorage.getItem('bq')||'[]');}catch(e){return [];}}
 function setQ(q){localStorage.setItem('bq',JSON.stringify(q));updateBar();}
 function uuid(){return (window.crypto&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2)).replace(/-/g,'').slice(0,32);}
@@ -165,14 +187,8 @@ function applyLocal(action,p){
     const a=Number(p.amount),s=S.summary;
     if(p.type==='income'){s.income+=a;s.extraIncome+=a;s.left+=a;}
     else{s.totalSpent+=a;s.remaining-=a;s.left-=a;const c=s.categories.find(x=>x.name===p.category);if(c)c.spent+=a;}
-  } else if(action==='splitAdd'&&S.split){
-    const t=Number(p.total),half=Math.round(t/2*100)/100;
-    const M={i_paid_split:['owes_me',half],b_paid_split:['i_owe',half],owes_me:['owes_me',t],i_owe:['i_owe',t]}[p.mode];
-    const delta=M[0]==='owes_me'?M[1]:-M[1];
-    const e={id:'tmp'+p.cid,date:p.date||today(),dir:M[0],amount:M[1],note:p.note||'',by:OWNER?'owner':'member'};
-    S.split.open.unshift(OWNER?Object.assign({person:p.person},e):e);
-    S.split.net+=delta;
-    if(OWNER&&S.split.people){const pp=S.split.people.find(x=>x.name===p.person);if(pp){pp.net+=delta;pp.open.unshift(Object.assign({person:p.person},e));}}
+  } else if(action==='ledgerAdd'&&S.ledger){
+    S.ledger.open.unshift({id:'tmp'+p.cid,date:p.date||today(),debtor:p.debtor,creditor:p.creditor,amount:Number(p.amount),note:p.note||'',by:S.me});
   }
 }
 function enqueue(action,payload,ok){
@@ -238,21 +254,26 @@ $('ov').addEventListener('click',e=>{if(e.target===$('ov'))closeModal();});
 
 // ---------- navigation: drawer (sections) + contextual tabs (options inside a section)
 const ICONS={
+  home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
   dash:'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>',
   exp:'<path d="M3 8h18v11H3z"/><path d="M3 8l3-4h12l3 4"/><path d="M16 13.5h2"/>',
   inc:'<path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>',
   split:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2A4 4 0 0 1 21 18v2"/>',
+  fgoals:'<path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/>',
   goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
   ana:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'
 };
 function ico(k){return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[k]+'</svg>';}
-const SECS=[['dash','Dashboard'],['exp','Expenses'],['inc','Income'],['split','Family Split'],['goals','Goals'],['ana','Analytics']];
-function secName(id){return (SECS.find(s=>s[0]===id)||[0,''])[1];}
+const OWNER_SECS=[['home','Home'],['dash','Dashboard'],['exp','Expenses'],['inc','Income'],['split','Family Split'],['fgoals','Family Goals'],['goals','My Goals'],['ana','Analytics']];
+const MEMBER_SECS=[['split','Family Split'],['fgoals','Family Goals']];
+function secs(){return OWNER?OWNER_SECS:MEMBER_SECS;}
+function secName(id){return (secs().find(s=>s[0]===id)||[0,''])[1];}
 function tabsFor(sec){
+  if(sec==='split')return [['overview','Overview']].concat(othersOf().map(p=>['p:'+p,p])).concat([['all','Everyone']]);
+  if(sec==='fgoals')return [['active','Active'],['done','Completed']];
   if(!OWNER)return [];
   if(sec==='exp')return [['add','Add'],['latest','Latest'],['cats','By category']];
   if(sec==='inc')return [['add','Add'],['hist','History']];
-  if(sec==='split')return [['overview','Overview']].concat((S.members||[]).map(m=>['p:'+m,m]));
   if(sec==='ana')return [['overview','Overview'],['charts','Charts'],['category','Category']];
   return [];
 }
@@ -264,7 +285,7 @@ $('menuBtn').onclick=()=>document.body.classList.contains('drawer-open')?closeDr
 $('scrim').onclick=closeDrawer;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();closeModal();}});
 function buildDrawer(){
-  $('drawer').innerHTML='<div class="brand">Budget</div>'+SECS.map(s=>'<button data-s="'+s[0]+'" class="'+(nav.sec===s[0]?'on':'')+'">'+ico(s[0])+'<span>'+s[1]+'</span></button>').join('');
+  $('drawer').innerHTML='<div class="brand">Hisab</div>'+secs().map(s=>'<button data-s="'+s[0]+'" class="'+(nav.sec===s[0]?'on':'')+'">'+ico(s[0])+'<span>'+s[1]+'</span></button>').join('');
 }
 $('drawer').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.s);});
 $('ctabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTab(b.dataset.t);});
@@ -275,26 +296,27 @@ function go(sec,tab){
 function setTab(t){nav.tabs[nav.sec]=t;enterView();render();window.scrollTo(0,0);}
 function enterView(){
   const t=curTab();
-  if((nav.sec==='exp'&&(t==='latest'||t==='cats'))||(nav.sec==='inc'&&t==='hist'))loadRecent();
-  if(nav.sec==='ana')loadAnalytics();
+  if(OWNER&&((nav.sec==='exp'&&(t==='latest'||t==='cats'))||(nav.sec==='inc'&&t==='hist')))loadRecent();
+  if(OWNER&&nav.sec==='ana')loadAnalytics();
 }
 function headerSub(){
   const s=S.summary;
   switch(nav.sec){
+    case 'home': return 'Hello, '+S.name+(s?' · '+s.period:'');
     case 'dash': return s?s.period+' · '+s.range+' · '+s.daysLeft+' days left':'';
     case 'exp': return 'Add and review spending';
     case 'inc': return 'Salary and other income';
-    case 'split': return OWNER?'Who owes whom':'You and '+(S.split&&S.split.other||'');
-    case 'goals': return 'What you are saving for';
+    case 'split': return 'Money between family members';
+    case 'fgoals': return 'Saving together as a family';
+    case 'goals': return 'Your personal goals';
     case 'ana': return 'Spending insights';
   }
   return '';
 }
 function renderHeader(){
-  $('pageTitle').textContent=OWNER?secName(nav.sec):'Family Split';
+  $('pageTitle').textContent=secName(nav.sec);
   $('pageSub').textContent=headerSub();
-  $('menuBtn').classList.toggle('hide',!OWNER);
-  document.title=(OWNER?secName(nav.sec):'Family Split')+' · Budget';
+  document.title=secName(nav.sec)+' · Hisab';
 }
 function renderTabs(){
   const tabs=tabsFor(nav.sec),c=$('ctabs');
@@ -316,10 +338,10 @@ function mountAdd(mode){
 }
 function render(){
   if(!inited)return;
+  if(!secs().some(s=>s[0]===nav.sec))nav.sec=OWNER?'home':'split';
+  const sp=curPerson();if(sp&&othersOf().indexOf(sp)<0)nav.tabs.split='overview';
   stashAdd();buildDrawer();renderHeader();renderTabs();
-  const v=$('view');
-  if(!OWNER){vMemberSplit(v);return;}
-  ({dash:vDash,exp:vExp,inc:vInc,split:vSplit,goals:vGoals,ana:vAna})[nav.sec](v);
+  ({home:vHome,dash:vDash,exp:vExp,inc:vInc,split:vSplit,fgoals:vFG,goals:vGoals,ana:vAna})[nav.sec]($('view'));
 }
 
 // ---------- add form (shared by Dashboard, Expenses, Income)
@@ -347,7 +369,7 @@ function bannerFor(net,other,link){
   return '<div class="banner '+(net>0?'g':'r')+'"'+(link?' data-go="split" style="cursor:pointer"':'')+'>'+netText(net,other)+'</div>';
 }
 function vDash(v){
-  v.innerHTML=bannerFor(S.split&&S.split.net,'Family',true)+'<div id="addSlot"></div><div class="card" id="dash"></div><div class="card" id="homeGoals"></div>';
+  v.innerHTML=familyBanner(true)+'<div id="addSlot"></div><div class="card" id="dash"></div><div class="card" id="homeGoals"></div>';
   mountAdd('both');
   const s=S.summary;
   if(s){
@@ -371,7 +393,7 @@ function vDash(v){
   $('homeGoals').classList.toggle('hide',!act.length);
   $('homeGoals').innerHTML='<h2>Goals</h2>'+act.map(goalBar).join('');
 }
-$('view').addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go,'overview');});
+$('view').addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go,g.dataset.tab);});
 function goalBar(g){
   const p=g.target>0?g.saved/g.target:0;
   let due='';if(g.due){due=g.daysLeft<0?'overdue by '+(-g.daysLeft)+' days':g.daysLeft+' days left';}
@@ -415,73 +437,100 @@ function editEntry(kind,row){
     del:b=>call('deleteEntry',{kind:'inc',row:row,orig:orig},after,b)});
 }
 
-// ---------- Family Split
+// ---------- Family Split (anyone <-> anyone in the family)
+function othersOf(){
+  const set=(S.people||[]).filter(p=>p!==S.me);
+  ((S.ledger&&S.ledger.open)||[]).concat((S.ledger&&S.ledger.settled)||[]).forEach(e=>[e.debtor,e.creditor].forEach(x=>{if(x&&x!==S.me&&set.indexOf(x)<0)set.push(x);}));
+  return set;
+}
+function pairNet(p){return ((S.ledger&&S.ledger.open)||[]).reduce((s,e)=>s+(e.creditor===S.me&&e.debtor===p?e.amount:0)-(e.debtor===S.me&&e.creditor===p?e.amount:0),0);}
+function myNet(){return othersOf().reduce((s,p)=>s+pairNet(p),0);}
+function familyPos(){
+  const m={};(S.people||[]).forEach(p=>m[p]=0);
+  S.ledger.open.forEach(e=>{m[e.creditor]=(m[e.creditor]||0)+e.amount;m[e.debtor]=(m[e.debtor]||0)-e.amount;});
+  return Object.keys(m).map(k=>({name:k,net:m[k]})).sort((a,b)=>b.net-a.net);
+}
+function familyBanner(link){
+  const net=myNet();if(!net)return '';
+  return '<div class="banner '+(net>0?'g':'r')+'"'+(link?' data-go="split" data-tab="overview" style="cursor:pointer"':'')+'>'+(net>0?'You are owed '+n(net)+' in total':'You owe '+n(-net)+' in total')+'</div>';
+}
+function lineOf(e){const dm=e.debtor===S.me;return (dm?'You':esc(e.debtor))+(dm?' owe ':' owes ')+(e.creditor===S.me?'you':esc(e.creditor))+' '+n(e.amount);}
+function canSettle(e){return OWNER||e.debtor===S.me||e.creditor===S.me||e.by===S.me;}
+function canEditL(e){return OWNER||e.by===S.me;}
+function ledgerRow(e,btns){
+  const tmp=String(e.id).indexOf('tmp')===0;
+  return '<div class="ent"><div class="l"><div>'+lineOf(e)+'</div><div class="sub">'+esc(fd(e.date))+(e.note?' · '+esc(e.note):'')+' · added by '+(e.by===S.me?'you':esc(e.by))+(tmp?' · waiting to sync':'')+'</div>'+
+    (btns&&!tmp?(canSettle(e)?'<button class="sm" data-la="settle" data-id="'+esc(e.id)+'">Settled</button>':'')+(canEditL(e)?'<button class="sm ghost" data-la="edit" data-id="'+esc(e.id)+'">Edit</button><button class="sm danger" data-la="del" data-id="'+esc(e.id)+'">Delete</button>':''):'')+'</div></div>';
+}
+function pairOnly(person){return e=>(e.debtor===S.me&&e.creditor===person)||(e.debtor===person&&e.creditor===S.me);}
 const MODES=[['i_paid_split','I paid, split equally'],['b_paid_split','__ paid, split equally'],['owes_me','__ owes me (full amount)'],['i_owe','I owe __ (full amount)']];
-function splitLine(e,other){return e.dir==='owes_me'?esc(other)+' owes you '+n(e.amount):'You owe '+esc(other)+' '+n(e.amount);}
 function splitFormHtml(other){
   return '<div class="card"><h2>Add</h2><label>What happened</label><select id="sMode">'+MODES.map(m=>'<option value="'+m[0]+'">'+esc(m[1].replace('__',other))+'</option>').join('')+'</select>'+
     '<label>Total amount</label><input id="sAmt" type="number" inputmode="decimal" step="any" placeholder="0">'+
     '<label>Note</label><input id="sNote" type="text" placeholder="e.g. groceries, rent"><label>Date</label><input id="sDate" type="date" value="'+today()+'">'+
     '<div class="sub" id="sPrev" style="margin-top:8px"></div><button class="full" id="sBtn">Add</button></div>';
 }
-function openListHtml(list,other,canEdit){
-  let h='<div class="card"><h2>Open</h2>';
-  if(!list.length)h+='<div class="empty">All settled</div>';
-  list.forEach(e=>{
-    const mine=OWNER?e.by==='owner':e.by!=='owner';
-    h+='<div class="ent"><div class="l"><div>'+splitLine(e,other)+'</div><div class="sub">'+esc(fd(e.date))+(e.note?' · '+esc(e.note):'')+' · by '+(mine?'you':esc(other))+(String(e.id).indexOf('tmp')===0?' · waiting to sync':'')+'</div>'+
-       (canEdit&&String(e.id).indexOf('tmp')!==0?'<button class="sm" data-sa="settle" data-id="'+esc(e.id)+'">Settled</button><button class="sm ghost" data-sa="edit" data-id="'+esc(e.id)+'">Edit</button><button class="sm danger" data-sa="del" data-id="'+esc(e.id)+'">Delete</button>':'')+'</div></div>';
-  });
-  if(canEdit&&list.length)h+='<button class="full ghost" data-sa="all">Settle everything</button>';
-  return h+'</div>';
-}
-function settledHtml(list,other){
-  if(!list.length)return '';
-  return '<div class="card"><details><summary>Recently settled</summary>'+list.map(e=>'<div class="ent"><div class="l">'+splitLine(e,other)+'<div class="sub">'+esc(fd(e.date))+(e.note?' · '+esc(e.note):'')+'</div></div></div>').join('')+'</details></div>';
-}
 function vSplit(v){
-  const sp=S.split;if(!sp||!sp.people){v.innerHTML='<div class="card empty">Loading...</div>';return;}
-  const person=curPerson();
-  if(!person){
-    let h=bannerFor(sp.net,'Family',false);
-    h+='<div class="card"><h2>Balances</h2>'+sp.people.map(p=>'<div class="ent" data-go-p="'+esc(p.name)+'" style="cursor:pointer"><div class="l"><div>'+esc(p.name)+'</div><div class="sub">'+(p.open.length?p.open.length+' open':'All settled')+'</div></div><b class="'+(p.net>0?'t-g':p.net<0?'t-r':'')+'">'+(p.net===0?'0':(p.net>0?'+':'-')+n(Math.abs(p.net)))+'</b></div>').join('')+'<div class="sub" style="margin-top:8px">Green means they owe you. Red means you owe them. Open a name for details.</div></div>';
-    const recent=sp.open.slice(0,8);
-    h+='<div class="card"><h2>Open entries</h2>'+(recent.map(e=>'<div class="ent"><div class="l"><div>'+splitLine(e,e.person)+'</div><div class="sub">'+esc(fd(e.date))+(e.note?' · '+esc(e.note):'')+'</div></div></div>').join('')||'<div class="empty">Nothing open</div>')+'</div>';
-    v.innerHTML=h;return;
+  const t=curTab(),person=curPerson(),L=S.ledger;
+  if(person){
+    const f=pairOnly(person),open=L.open.filter(f),set=L.settled.filter(f);
+    v.innerHTML=bannerFor(pairNet(person),person,false)+splitFormHtml(person)+
+      '<div class="card"><h2>Open with '+esc(person)+'</h2>'+(open.map(e=>ledgerRow(e,true)).join('')||'<div class="empty">All settled</div>')+(open.length?'<button class="full ghost" data-la="all">Settle everything with '+esc(person)+'</button>':'')+'</div>'+
+      (set.length?'<div class="card"><details><summary>Recently settled</summary>'+set.map(e=>ledgerRow(e,false)).join('')+'</details></div>':'');
+    bindSplitForm(person);return;
   }
-  const pp=sp.people.find(x=>x.name===person)||{name:person,net:0,open:[],settled:[]};
-  v.innerHTML=bannerFor(pp.net,person,false)+splitFormHtml(person)+openListHtml(pp.open,person,true)+settledHtml(pp.settled,person);
-  bindSplitForm(person);
+  if(t==='all'){
+    const ppl=(S.people||[]).slice();
+    const opt=sel=>ppl.map(p=>'<option'+(p===sel?' selected':'')+'>'+esc(p)+'</option>').join('');
+    const others=othersOf();
+    v.innerHTML='<div class="card"><h2>Add between any two people</h2><label>Who owes</label><select id="eDeb">'+opt(S.me)+'</select><label>Who is owed</label><select id="eCre">'+opt(others[0])+'</select>'+
+      '<label>Amount</label><input id="eAmt" type="number" inputmode="decimal" step="any" placeholder="0"><label>Note</label><input id="eNote" type="text" placeholder="e.g. groceries"><label>Date</label><input id="eDate" type="date" value="'+today()+'">'+
+      '<button class="full" id="eBtn">Add</button></div>'+
+      '<div class="card"><h2>Everyone: open entries</h2>'+(L.open.map(e=>ledgerRow(e,true)).join('')||'<div class="empty">Nothing open</div>')+'</div>'+
+      (L.settled.length?'<div class="card"><details><summary>Recently settled</summary>'+L.settled.map(e=>ledgerRow(e,false)).join('')+'</details></div>':'');
+    $('eBtn').onclick=()=>{
+      const p={debtor:$('eDeb').value,creditor:$('eCre').value,amount:$('eAmt').value,note:$('eNote').value,date:$('eDate').value};
+      if(p.debtor===p.creditor)return toast('Pick two different people',true);
+      if(!(Number(p.amount)>0))return toast('Enter an amount above 0',true);
+      call('ledgerAdd',p,r=>{setLedger(r);toast(r.queued?r.msg:'Added');},$('eBtn'));
+    };
+    return;
+  }
+  const others=othersOf();
+  let h=familyBanner(false)+'<div class="card"><h2>Your balances</h2>'+
+    (others.map(p=>{const x=pairNet(p);return '<div class="ent" data-go-p="'+esc(p)+'" style="cursor:pointer"><div class="l"><div>'+esc(p)+'</div><div class="sub">'+(x>0?esc(p)+' owes you':x<0?'You owe '+esc(p):'Settled')+'</div></div><b class="'+(x>0?'t-g':x<0?'t-r':'')+'">'+(x===0?'0':n(Math.abs(x)))+'</b></div>';}).join('')||'<div class="empty">No other family members yet</div>')+
+    '<div class="sub" style="margin-top:8px">Green means they owe you. Red means you owe them. Tap a name for details.</div></div>';
+  const pos=familyPos().filter(x=>Math.round(x.net)!==0);
+  if(pos.length)h+='<div class="card"><h2>Whole family</h2>'+pos.map(x=>'<div class="rowtop" style="padding:5px 0"><span>'+esc(x.name===S.me?'You':x.name)+'</span><span class="'+(x.net>0?'t-g':'t-r')+'">'+(x.net>0?'is owed ':'owes ')+n(Math.abs(x.net))+'</span></div>').join('')+'<div class="sub" style="margin-top:6px">Each person\'s overall position across all open entries.</div></div>';
+  h+='<div class="card"><h2>Latest open entries</h2>'+(L.open.slice(0,8).map(e=>ledgerRow(e,false)).join('')||'<div class="empty">Nothing open</div>')+'</div>';
+  v.innerHTML=h;
 }
-function vMemberSplit(v){
-  const sp=S.split;if(!sp){v.innerHTML='<div class="card empty">Loading...</div>';return;}
-  v.innerHTML=bannerFor(sp.net,sp.other,false)+splitFormHtml(sp.other)+openListHtml(sp.open,sp.other,false)+settledHtml(sp.settled,sp.other);
-  bindSplitForm(sp.other);
-}
-function bindSplitForm(other){
+function bindSplitForm(person){
   const prev=()=>{const o=$('sPrev');if(!o)return;const a=parseFloat($('sAmt').value)||0,m=$('sMode').value;
     if(!a){o.textContent='';return;}const half=Math.round(a/2*100)/100;
-    o.textContent=m==='i_paid_split'?other+' owes you '+n(half):m==='b_paid_split'?'You owe '+other+' '+n(half):m==='owes_me'?other+' owes you '+n(a):'You owe '+other+' '+n(a);};
+    o.textContent=m==='i_paid_split'?person+' owes you '+n(half):m==='b_paid_split'?'You owe '+person+' '+n(half):m==='owes_me'?person+' owes you '+n(a):'You owe '+person+' '+n(a);};
   $('sAmt').oninput=prev;$('sMode').onchange=prev;
   $('sBtn').onclick=()=>{
-    const p={mode:$('sMode').value,total:$('sAmt').value,note:$('sNote').value,date:$('sDate').value};
-    if(OWNER)p.person=other;
-    if(!(Number(p.total)>0))return toast('Enter an amount above 0',true);
-    call('splitAdd',p,r=>{setSplit(r);toast(r.queued?r.msg:'Added');},$('sBtn'));
+    const total=Number($('sAmt').value),m=$('sMode').value;
+    if(!(total>0))return toast('Enter an amount above 0',true);
+    const half=Math.round(total/2*100)/100;
+    const M={i_paid_split:[person,S.me,half],b_paid_split:[S.me,person,half],owes_me:[person,S.me,total],i_owe:[S.me,person,total]}[m];
+    let note=$('sNote').value.trim();if(m.indexOf('split')>0)note=(note?note+' ':'')+'(total '+n(total)+', split equally)';
+    call('ledgerAdd',{debtor:M[0],creditor:M[1],amount:M[2],note:note,date:$('sDate').value},r=>{setLedger(r);toast(r.queued?r.msg:'Added');},$('sBtn'));
   };
 }
-function setSplit(r){if(r.split)S.split=r.split;render();}
+function setLedger(r){if(r.ledger)S.ledger=r.ledger;render();}
 $('view').addEventListener('click',e=>{
   const gp=e.target.closest('[data-go-p]');if(gp){go('split','p:'+gp.dataset.goP);return;}
-  const b=e.target.closest('[data-sa]');if(!b||!OWNER)return;
-  const a=b.dataset.sa,id=b.dataset.id,person=curPerson();
-  if(a==='settle')call('splitSettle',{id:id},r=>{setSplit(r);toast('Marked settled');});
-  else if(a==='all'){if(confirm('Mark everything with '+person+' as settled?'))call('splitSettle',{all:true,person:person},r=>{setSplit(r);toast('All settled');});}
-  else if(a==='del'){if(confirm('Delete this entry?'))call('splitDelete',{id:id},setSplit);}
+  const b=e.target.closest('[data-la]');if(!b)return;
+  const a=b.dataset.la,id=b.dataset.id;
+  if(a==='settle')call('ledgerSettle',{id:id},r=>{setLedger(r);toast('Marked settled');});
+  else if(a==='all'){const p=curPerson();if(p&&confirm('Mark everything with '+p+' as settled?'))call('ledgerSettle',{all:true,with:p},r=>{setLedger(r);toast('Settled');});}
+  else if(a==='del'){if(confirm('Delete this entry?'))call('ledgerDelete',{id:id},setLedger);}
   else if(a==='edit'){
-    const pp=S.split.people.find(x=>x.name===person),en=pp&&pp.open.find(x=>x.id===id);if(!en)return;
+    const en=S.ledger.open.find(x=>x.id===id);if(!en)return;
     modal({title:'Edit amount / note',fields:[{id:'amount',label:'Amount owed',type:'number',value:en.amount},{id:'note',label:'Note',value:en.note}],
-      save:(vv,bb)=>call('splitUpdate',{id:id,amount:vv.amount,note:vv.note},r=>{closeModal();setSplit(r);},bb)});
+      save:(vv,bb)=>call('ledgerUpdate',{id:id,amount:vv.amount,note:vv.note},r=>{closeModal();setLedger(r);},bb)});
   }
 });
 
@@ -508,6 +557,76 @@ function goalForm(id){
   modal({title:id?'Edit goal':'New goal',fields:[{id:'name',label:'Goal',value:g.name},{id:'target',label:'Target amount',type:'number',value:g.target},{id:'due',label:'Due date (optional)',type:'date',value:g.due}],
     save:(v,b)=>call('goalSave',{id:id,name:v.name,target:v.target,due:v.due},r=>{closeModal();setGoals(r);},b),
     del:id?(b=>call('goalDelete',{id:id},r=>{closeModal();setGoals(r);},b)):null});
+}
+
+// ---------- Home
+function vHome(v){
+  const s=S.summary;let h='';
+  if(s){
+    const pct=s.totalBudget>0?s.totalSpent/s.totalBudget:0,perDay=s.daysLeft>0&&s.remaining>0?s.remaining/s.daysLeft:0;
+    h+='<div class="card"><div class="sub">Left to spend this month</div><div class="big '+(s.remaining<0?'t-r':'')+'">'+(s.remaining<0?'-':'')+n(Math.abs(s.remaining))+'</div>'+
+       '<div class="track"><div class="fill '+cls(pct)+'" style="width:'+Math.min(100,pct*100)+'%"></div></div>'+
+       '<div class="sub">'+n(s.totalSpent)+' of '+n(s.totalBudget)+' spent · '+s.daysLeft+' days left'+(perDay?' · about '+n(perDay)+' per day':'')+'</div></div>';
+  }
+  h+='<div class="grid2" style="margin-bottom:12px"><button data-go="exp" data-tab="add">+ Expense</button><button class="ghost" data-go="inc" data-tab="add">+ Income</button><button class="ghost" data-go="split" data-tab="overview">Family Split</button><button class="ghost" data-go="ana" data-tab="overview">Analytics</button></div>';
+  const rem=[];
+  othersOf().forEach(p=>{const x=pairNet(p);if(x>0)rem.push({t:'ok',x:p+' owes you '+n(x)});else if(x<0)rem.push({t:'bad',x:'You owe '+p+' '+n(-x)});});
+  if(s)s.insights.filter(i=>i.type==='bad'||i.type==='warn').slice(0,2).forEach(i=>rem.push({t:i.type,x:i.text}));
+  (S.goals||[]).filter(g=>g.status!=='Done'&&g.daysLeft!=null&&g.daysLeft<=7).forEach(g=>rem.push({t:g.daysLeft<0?'bad':'warn',x:'Goal "'+g.name+'" '+(g.daysLeft<0?'is overdue':'is due in '+g.daysLeft+' days')}));
+  (S.fgoals||[]).filter(g=>g.status!=='Done'&&g.daysLeft!=null&&g.daysLeft<=7).forEach(g=>rem.push({t:g.daysLeft<0?'bad':'warn',x:'Family goal "'+g.name+'" '+(g.daysLeft<0?'is overdue':'is due in '+g.daysLeft+' days')}));
+  h+='<div class="card"><h2>Reminders</h2>'+(rem.map(r=>'<div class="ins '+r.t+'">'+esc(r.x)+'</div>').join('')||'<div class="empty">Nothing needs your attention.</div>')+'</div>';
+  const fg=(S.fgoals||[]).filter(g=>g.status!=='Done').slice(0,2);
+  if(fg.length)h+='<div class="card" data-go="fgoals" data-tab="active" style="cursor:pointer"><h2>Family goals</h2>'+fg.map(g=>{const p=g.target>0?g.total/g.target:0;return '<div class="row"><div class="rowtop"><span>'+esc(g.name)+'</span><span>'+n(g.total)+' / '+n(g.target)+'</span></div><div class="track"><div class="fill '+(p>=1?'g':'a')+'" style="width:'+Math.min(100,p*100)+'%"></div></div></div>';}).join('')+'</div>';
+  const mg=(S.goals||[]).filter(g=>g.status!=='Done').slice(0,2);
+  if(mg.length)h+='<div class="card" data-go="goals" style="cursor:pointer"><h2>My goals</h2>'+mg.map(goalBar).join('')+'</div>';
+  v.innerHTML=h;
+}
+
+// ---------- Family Goals (everyone sees them, everyone adds what they put in)
+function pcol(name){const i=(S.people||[]).indexOf(name);return PAL[(i<0?(S.people||[]).length:i)%PAL.length];}
+function canEditG(g){return OWNER||g.createdBy===S.me;}
+function fgCard(g){
+  const p=g.target>0?g.total/g.target:0,left=Math.max(0,g.target-g.total);
+  let due='';if(g.due)due=g.daysLeft<0?'overdue by '+(-g.daysLeft)+' days':g.daysLeft+' days left ('+fd(g.due)+')';
+  const names=Object.keys(g.byPerson);
+  const stack='<div class="stack">'+names.map(k=>'<div title="'+esc(k)+'" style="width:'+Math.min(100,g.byPerson[k]/g.target*100)+'%;background:'+pcol(k)+'"></div>').join('')+'</div>';
+  const chips='<div class="chips">'+(names.length?names.map(k=>'<span><i class="dot" style="background:'+pcol(k)+'"></i>'+esc(k===S.me?'You':k)+' '+n(g.byPerson[k])+'</span>').join(''):'<span>No contributions yet</span>')+'</div>';
+  let h='<div class="card"><div class="rowtop"><b>'+esc(g.name)+'</b><span>'+n(g.total)+' / '+n(g.target)+'</span></div>'+stack+chips+
+    '<div class="sub">'+(g.total>=g.target?'<span class="t-g">Target reached</span>':n(left)+' to go ('+Math.round(p*100)+'%)')+(due?' · '+due:'')+' · started by '+esc(g.createdBy===S.me?'you':g.createdBy)+'</div>';
+  if(g.status!=='Done')h+='<button class="sm" data-fg="contrib" data-id="'+g.id+'">+ Contribute</button>';
+  if(canEditG(g)){h+='<button class="sm ghost" data-fg="edit" data-id="'+g.id+'">Edit</button>';h+=g.status==='Done'?'<button class="sm ghost" data-fg="reopen" data-id="'+g.id+'">Reopen</button>':'<button class="sm ghost" data-fg="done" data-id="'+g.id+'">Mark done</button>';}
+  h+='<details style="margin-top:10px"><summary>Contributions ('+g.contribs.length+')</summary>'+(g.contribs.map(c=>'<div class="ent"><div class="l"><div>'+esc(c.person===S.me?'You':c.person)+' · '+n(c.amount)+'</div><div class="sub">'+esc(fd(c.date))+(c.note?' · '+esc(c.note):'')+'</div></div>'+((OWNER||c.person===S.me)?'<button class="sm danger" data-fg="cdel" data-id="'+c.id+'">Remove</button>':'')+'</div>').join('')||'<div class="empty">Nothing yet</div>')+'</details></div>';
+  return h;
+}
+function vFG(v){
+  const t=curTab()==='done'?'done':'active';
+  const list=(S.fgoals||[]).filter(g=>t==='done'?g.status==='Done':g.status!=='Done');
+  let h='';
+  if(t==='active')h+='<div class="card"><button class="full" style="margin-top:0" data-fg="new">+ New family goal</button><div class="sub" style="margin-top:8px">Everyone in the family can see these goals and record what they put in.</div></div>';
+  h+=list.map(fgCard).join('')||'<div class="card empty">'+(t==='done'?'No completed goals yet.':'No family goals yet. Start one, for example a gift, a trip or something for the house.')+'</div>';
+  v.innerHTML=h;
+}
+function setFG(r){if(r.fgoals)S.fgoals=r.fgoals;render();}
+$('view').addEventListener('click',e=>{
+  const b=e.target.closest('[data-fg]');if(!b)return;const a=b.dataset.fg,id=b.dataset.id;
+  if(a==='new')fgForm();
+  else if(a==='edit')fgForm(id);
+  else if(a==='contrib')fgContrib(id);
+  else if(a==='done')call('fgStatus',{id:id,done:true},setFG);
+  else if(a==='reopen')call('fgStatus',{id:id,done:false},setFG);
+  else if(a==='cdel'){if(confirm('Remove this contribution?'))call('fgContribDelete',{id:id},setFG);}
+});
+function fgForm(id){
+  const g=id?S.fgoals.find(x=>x.id===id):{name:'',target:'',due:''};
+  modal({title:id?'Edit family goal':'New family goal',fields:[{id:'name',label:'Goal',value:g.name},{id:'target',label:'Target amount (total for the family)',type:'number',value:g.target},{id:'due',label:'Due date (optional)',type:'date',value:g.due}],
+    save:(v,b)=>call('fgSave',{id:id,name:v.name,target:v.target,due:v.due},r=>{closeModal();setFG(r);},b),
+    del:id?(b=>call('fgDelete',{id:id},r=>{closeModal();setFG(r);},b)):null});
+}
+function fgContrib(id){
+  const fields=[{id:'amount',label:'Amount you are putting in',type:'number',value:''},{id:'note',label:'Note (optional)',value:''},{id:'date',label:'Date',type:'date',value:today()}];
+  if(OWNER)fields.unshift({id:'person',label:'Who is contributing',options:S.people,value:S.me});
+  modal({title:'Add a contribution',saveText:'Add',fields:fields,
+    save:(v,b)=>call('fgContribute',{id:id,amount:v.amount,note:v.note,date:v.date,person:v.person},r=>{closeModal();setFG(r);toast('Added');},b)});
 }
 
 // ---------- Analytics
@@ -682,18 +801,16 @@ function bindAna(){
 function init(r){
   Object.assign(S,r);
   ROLE=S.role||ROLE;OWNER=ROLE==='owner';
-  if(OWNER){
-    if(!S.split||!S.split.people)S.split={net:0,open:[],settled:[],other:'Family',people:(S.members||[]).map(m=>({name:m,net:0,open:[],settled:[]}))};
-    S.members=S.members||[];
-  }
+  S.me=S.name||S.me;
+  S.people=S.people||[];S.members=S.members||[];S.fgoals=S.fgoals||[];
+  if(!S.ledger||!S.ledger.open)S.ledger={people:S.people,open:[],settled:[]};
   $('boot').style.display='none';
   if(!$('date').value)$('date').value=today();
-  if(!inited){inited=true;nav.sec=OWNER?'dash':'split';}
+  if(!inited){inited=true;nav.sec=OWNER?'home':'split';}
   if(OWNER){
     const cv=$('cat').value;
     $('cat').innerHTML=S.categories.map(c=>'<option>'+esc(c)+'</option>').join('');
     if(cv&&S.categories.indexOf(cv)>=0)$('cat').value=cv;
-    if(nav.tabs.split.indexOf('p:')===0&&S.members.indexOf(nav.tabs.split.slice(2))<0)nav.tabs.split='overview';
   }
   getQ().forEach(it=>applyLocal(it.action,it.payload));
   render();updateBar();
@@ -709,6 +826,8 @@ window.addEventListener('offline',updateBar);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&KEY){if(getQ().length)flush();else refresh();}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 updateBar();
+// cover screen: plays once per launch, then fades out
+setTimeout(()=>{const sp=$('splash');if(!sp)return;sp.classList.add('out');setTimeout(()=>sp.remove(),600);},(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)?500:1900);
 </script>
 </body>
 </html>
