@@ -106,6 +106,44 @@
   #splash .tag{color:var(--mu);font-size:14px;max-width:290px;opacity:0;animation:fade .7s 1s ease forwards}
   @keyframes grow{to{transform:scaleY(1)}}@keyframes rise{to{opacity:1;transform:none}}@keyframes fade{to{opacity:1}}
   @media(prefers-reduced-motion:reduce){#splash .b,#splash .word,#splash .tag{animation:none;opacity:1;transform:none}}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .badge.bg{color:#9be6c4;border-color:rgba(52,199,137,.5);background:rgba(52,199,137,.1)}
+  .badge.ba{color:#f7d98a;border-color:rgba(240,180,41,.5);background:rgba(240,180,41,.1)}
+  .badge.br{color:#ffb3ad;border-color:rgba(242,101,90,.5);background:rgba(242,101,90,.1)}
+  .pills{display:flex;gap:6px;overflow-x:auto;margin:0 0 12px;scrollbar-width:none}.pills::-webkit-scrollbar{display:none}
+  .pill{flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--bd);background:var(--s2);color:var(--mu);font-size:13px;font-weight:600}
+  .pill.on{background:var(--ac);border-color:var(--ac);color:#fff}
+  .gt{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:6px;padding:9px 0;border-bottom:1px solid var(--bd);font-size:13px;align-items:center}
+  .gt span:not(:first-child){text-align:right}.gt span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .gt.head{color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+  .gt.tot{font-weight:800;border-bottom:0}
+  .gt.c5{grid-template-columns:1.2fr repeat(4,1fr);font-size:12px}
+  .gx{cursor:pointer}.gx:active{background:var(--s2)}
+  #wiz{position:fixed;inset:0;background:var(--bg);z-index:80;display:none;flex-direction:column}
+  .wz-head{display:flex;align-items:center;gap:12px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid var(--bd);background:var(--s1)}
+  .wz-prog{display:flex;gap:5px;padding:10px 14px 0;max-width:588px;width:100%;margin:0 auto}.wz-prog i{flex:1;height:4px;border-radius:2px;background:var(--s2)}.wz-prog i.on{background:var(--ac)}
+  .wz-body{flex:1;overflow-y:auto;padding:14px;width:100%;max-width:588px;margin:0 auto}
+  .wz-foot{padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--bd);background:var(--s1)}
+  .wz-foot>div{display:flex;gap:10px;max-width:560px;margin:0 auto}.wz-foot button{flex:1}
+  .prow{display:grid;grid-template-columns:1fr 112px 38px;gap:8px;margin-bottom:8px;align-items:center}
+  .xbtn{width:38px;height:44px;padding:0;background:var(--s2);color:var(--er);border:1px solid var(--bd);font-size:18px}
+  .chk{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;background:var(--s1);font-size:15px;margin-top:0}
+  .chk input{width:20px;height:20px;flex:none;margin:0}
+  #view.in{animation:vin .22s ease}
+  @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .iconbtn.spinning svg{animation:spin .8s linear infinite}
+  #lock{position:fixed;inset:0;z-index:90;background:radial-gradient(circle at 50% 30%,#17284f 0%,#0e1525 70%);display:flex;align-items:center;justify-content:center;overflow:auto}
+  .lk-in{width:100%;max-width:340px;padding:24px;text-align:center}
+  .lk-in .logo{width:60px;height:60px;border-radius:15px;margin-bottom:12px}
+  .lk-title{font-size:22px;font-weight:800;margin-bottom:4px}
+  .lk-dots{display:flex;gap:12px;justify-content:center;margin:20px 0 8px}
+  .lk-dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--mu)}.lk-dots i.on{background:var(--ac);border-color:var(--ac)}
+  .lk-msg{min-height:34px;font-size:13px;color:#ffb3ad;margin-bottom:6px}
+  .lk-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:264px;margin:0 auto}
+  .lk-pad button{height:64px;border-radius:50%;font-size:24px;background:var(--s1);border:1px solid var(--bd);color:var(--tx);font-weight:600;padding:0}
+  .lk-pad button:active{background:var(--s2)}
+  .lk-forgot{background:none;color:var(--mu);margin-top:18px;font-size:13px;font-weight:600}
   .hide{display:none!important}
 </style>
 </head>
@@ -118,6 +156,7 @@
 <header id="hdr">
   <button class="iconbtn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   <div class="brandbar"><img class="logo" src="icon-192.png" alt=""><span>Hisab</span></div>
+  <button class="iconbtn" id="refreshBtn" style="margin-left:auto" aria-label="Refresh"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button>
 </header>
 <nav id="ctabs" class="hide" aria-label="Section options"></nav>
 <div id="bar" class="hide"></div>
@@ -128,6 +167,8 @@
 </main>
 <div id="scrim"></div>
 <aside id="drawer" aria-label="Main menu"></aside>
+<div id="wiz" role="dialog" aria-modal="true"></div>
+<div id="lock" class="hide" role="dialog" aria-modal="true" aria-label="App lock"></div>
 <div id="toast"></div>
 <div id="ov"><div class="sheet" id="sheet"></div></div>
 
@@ -147,9 +188,11 @@
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbwpmfqGZFpUqhpjcO81t15dHwehJzs7lLw_qM6zymBSRx-NmFXt2ehMrwRmaoVy8VpY/exec';
 let KEY = localStorage.getItem('bk') || '';
-(function(){const q=new URLSearchParams(location.search);if(q.get('k')){KEY=q.get('k');localStorage.setItem('bk',KEY);history.replaceState(null,'',location.pathname);}})();
+let LOCK_RESET=false;
+(function(){const q=new URLSearchParams(location.search);if(q.get('k')){KEY=q.get('k');localStorage.setItem('bk',KEY);history.replaceState(null,'',location.pathname);
+  if(localStorage.getItem('pinh')){['pinh','pins','pinl','pinf'].forEach(k=>localStorage.removeItem(k));LOCK_RESET=true;}}})();
 let ROLE='', OWNER=false, inited=false;
-let S={categories:[],summary:null,goals:[],members:[],salaryDay:28,name:'',me:'',firstBudgetMonth:'',people:[],ledger:{people:[],open:[],settled:[]},fgoals:[]};
+let S={categories:[],summary:null,goals:[],members:[],salaryDay:28,name:'',me:'',firstBudgetMonth:'',people:[],ledger:{people:[],open:[],settled:[]},fgoals:[],groups:{expenses:[],summary:{},history:[]}};
 let type='expense', E={}, R=null;
 let nav={sec:'dash',tabs:{exp:'add',inc:'add',split:'overview',fgoals:'active',ana:'overview'}};
 
@@ -211,26 +254,36 @@ function flush(){
   })();
 }
 function refresh(){if(KEY&&!getQ().length)call('boot',{},init,null,'bc');}
-function call(action,payload,ok,btn,cacheKey){
+function call(action,payload,ok,btn,cacheKey,onErr){
   payload=payload||{};
-  if(btn)btn.disabled=true;
-  const done=()=>{if(btn)btn.disabled=false;};
+  const label=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Please wait…';}
+  const done=()=>{if(btn){btn.disabled=false;btn.textContent=label;}};
   if(Q_ACTIONS[action]){
     payload.cid=uuid();
     if(getQ().length){enqueue(action,payload,ok);done();flush();return;}
     post(action,payload).then(r=>{done();if(ok)ok(r);})
-      .catch(e=>{done();if(e.server)toast(e.message,true);else enqueue(action,payload,ok);});
+      .catch(e=>{done();if(e.server){if(!(onErr&&onErr(e)))toast(e.message,true);}else enqueue(action,payload,ok);});
     return;
   }
   post(action,payload).then(r=>{done();if(cacheKey)localStorage.setItem(cacheKey,JSON.stringify(r));if(ok)ok(r);})
     .catch(e=>{
       done();
-      if(e.server){toast(e.message,true);return;}
+      if(e.server){if(!(onErr&&onErr(e)))toast(e.message,true);return;}
       const c=cacheKey&&localStorage.getItem(cacheKey);
       if(c){updateBar();if(ok)ok(JSON.parse(c),true);}
-      else toast('No internet. This needs a connection.',true);
+      else toast('No internet connection. Nothing was saved.',true);
     });
 }
+function animateView(){const vw=$('view');vw.classList.remove('in');void vw.offsetWidth;vw.classList.add('in');}
+let refreshing=false;
+$('refreshBtn').onclick=()=>{
+  if(!KEY||refreshing)return;
+  if(getQ().length){flush();toast('Syncing waiting entries…');return;}
+  refreshing=true;$('refreshBtn').classList.add('spinning');
+  call('boot',{},(r,cached)=>{refreshing=false;$('refreshBtn').classList.remove('spinning');init(r);toast(cached?'Offline: showing saved data':'Up to date');},null,'bc');
+  setTimeout(()=>{refreshing=false;$('refreshBtn').classList.remove('spinning');},8000);
+};
 
 // ---------- modal
 function modal(o){
@@ -238,7 +291,7 @@ function modal(o){
   o.fields.forEach(f=>{
     h+='<label>'+esc(f.label)+'</label>';
     if(f.options) h+='<select id="m_'+f.id+'">'+f.options.map(x=>'<option'+(x===f.value?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';
-    else h+='<input id="m_'+f.id+'" type="'+(f.type||'text')+'" value="'+esc(f.value)+'" '+(f.type==='number'?'inputmode="decimal" step="any"':'')+'>';
+    else h+='<input id="m_'+f.id+'" type="'+(f.type||'text')+'" value="'+esc(f.value)+'" '+(f.type==='number'?'inputmode="decimal" step="any"':'')+(f.type==='password'?'inputmode="numeric" maxlength="6" autocomplete="off"':'')+'>';
   });
   h+='<button class="full" id="m_save">'+esc(o.saveText||'Save')+'</button>';
   if(o.del) h+='<button class="full danger" id="m_del">Delete</button>';
@@ -255,6 +308,7 @@ $('ov').addEventListener('click',e=>{if(e.target===$('ov'))closeModal();});
 // ---------- navigation: drawer (sections) + contextual tabs (options inside a section)
 const ICONS={
   home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   dash:'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>',
   exp:'<path d="M3 8h18v11H3z"/><path d="M3 8l3-4h12l3 4"/><path d="M16 13.5h2"/>',
   inc:'<path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>',
@@ -269,7 +323,7 @@ const MEMBER_SECS=[['split','Family Split'],['fgoals','Family Goals']];
 function secs(){return OWNER?OWNER_SECS:MEMBER_SECS;}
 function secName(id){return (secs().find(s=>s[0]===id)||[0,''])[1];}
 function tabsFor(sec){
-  if(sec==='split')return [['overview','Overview']].concat(othersOf().map(p=>['p:'+p,p])).concat(OWNER?[['all','Everyone']]:[]);
+  if(sec==='split')return [['overview','Overview']].concat(othersOf().map(p=>['p:'+p,p])).concat(OWNER?[['all','Everyone']]:[]).concat([['groups','Group expenses'],['settle','Settle up']]);
   if(sec==='fgoals')return [['active','Active'],['done','Completed']];
   if(!OWNER)return [];
   if(sec==='exp')return [['add','Add'],['latest','Latest'],['cats','By category']];
@@ -285,15 +339,16 @@ $('menuBtn').onclick=()=>document.body.classList.contains('drawer-open')?closeDr
 $('scrim').onclick=closeDrawer;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();closeModal();}});
 function buildDrawer(){
-  $('drawer').innerHTML='<div class="brand">Hisab</div>'+secs().map(s=>'<button data-s="'+s[0]+'" class="'+(nav.sec===s[0]?'on':'')+'">'+ico(s[0])+'<span>'+s[1]+'</span></button>').join('');
+  $('drawer').innerHTML='<div class="brand">Hisab</div>'+secs().map(s=>'<button data-s="'+s[0]+'" class="'+(nav.sec===s[0]?'on':'')+'">'+ico(s[0])+'<span>'+s[1]+'</span></button>').join('')+
+    '<div style="flex:1"></div><button data-s="__lock">'+ico('lock')+'<span>App lock'+(localStorage.getItem('pinh')?' · on':'')+'</span></button>';
 }
-$('drawer').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.s);});
+$('drawer').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.s==='__lock'){closeDrawer();openLockSettings();return;}go(b.dataset.s);});
 $('ctabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTab(b.dataset.t);});
 function go(sec,tab){
   nav.sec=sec;if(tab)nav.tabs[sec]=tab;
-  closeDrawer();enterView();render();window.scrollTo(0,0);
+  closeDrawer();enterView();render();animateView();window.scrollTo(0,0);
 }
-function setTab(t){nav.tabs[nav.sec]=t;enterView();render();window.scrollTo(0,0);}
+function setTab(t){nav.tabs[nav.sec]=t;enterView();render();animateView();window.scrollTo(0,0);}
 function enterView(){
   const t=curTab();
   if(OWNER&&((nav.sec==='exp'&&(t==='latest'||t==='cats'))||(nav.sec==='inc'&&t==='hist')))loadRecent();
@@ -476,6 +531,8 @@ function splitFormHtml(other){
 }
 function vSplit(v){
   const t=curTab(),person=curPerson(),L=S.ledger;
+  if(t==='groups')return vGroups(v);
+  if(t==='settle')return vSettle(v);
   if(person){
     const f=pairOnly(person),open=L.open.filter(f),set=L.settled.filter(f);
     v.innerHTML=bannerFor(pairNet(person),person,false)+splitFormHtml(person)+
@@ -563,6 +620,285 @@ function goalForm(id){
     del:id?(b=>call('goalDelete',{id:id},r=>{closeModal();setGoals(r);},b)):null});
 }
 
+// ---------- Group expenses (one bill, several payers, several sharers)
+function fm(x){return Number(x||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function nm(x){return x===S.me?'You':x;}
+function nl(x){return x===S.me?'you':x;}
+function verb(x,a,b){return x===S.me?a:b;}
+function badge(st){return '<span class="badge '+(st==='Settled'?'bg':st==='Open'?'br':'ba')+'">'+(st==='Partial'?'Partly settled':st)+'</span>';}
+function myBal(e){const b=e.balances.find(x=>x.person===S.me);return b?b.remaining:0;}
+function posText(x){return x>0?'<span class="t-g">You are owed '+fm(x)+'</span>':x<0?'<span class="t-r">You owe '+fm(-x)+'</span>':'<span class="sub">Even</span>';}
+function toC(x){const v=parseFloat(x);if(!isFinite(v))return NaN;const c=Math.round(v*100);return Math.abs(v*100-c)<1e-6?c:NaN;}
+function pidx(p){const i=S.people.indexOf(p);return i<0?99:i;}
+function eqShares(parts,T){
+  const ord=parts.slice().sort((a,b)=>pidx(a)-pidx(b)),base=Math.floor(T/ord.length),extra=T-base*ord.length;
+  return ord.map((p,i)=>({person:p,c:base+(i<extra?1:0)})).filter(x=>x.c>0);
+}
+function planC(rem){
+  const cr=[],db=[];Object.keys(rem).forEach(k=>{if(rem[k]>0)cr.push({p:k,a:rem[k]});else if(rem[k]<0)db.push({p:k,a:-rem[k]});});
+  const ord=(a,b)=>b.a-a.a||(a.p<b.p?-1:a.p>b.p?1:0);cr.sort(ord);db.sort(ord);
+  const out=[];let i=0,j=0;
+  while(i<cr.length&&j<db.length){const pay=Math.min(cr[i].a,db[j].a);out.push({from:db[j].p,to:cr[i].p,c:pay});cr[i].a-=pay;db[j].a-=pay;if(cr[i].a===0)i++;if(db[j].a===0)j++;}
+  return out;
+}
+let GFILTER='all',GD=null,GW=null;
+function vGroups(v){
+  const G=S.groups||{},sm=G.summary||{},all=G.expenses||[];
+  const st=(l,x,c)=>'<div class="stat"><div class="lb">'+l+'</div><div class="vl '+(c||'')+'">'+fm(x)+'</div></div>';
+  let h='<button class="full" style="margin:0 0 12px" data-gx="new">+ New group expense</button>';
+  if(!all.length){v.innerHTML=h+'<div class="card empty">No group expenses yet.<br>Record a family dinner, a bill or a shared purchase, then split it fairly between everyone.</div>';return;}
+  h+='<div class="grid2" style="margin-bottom:12px">'+st(OWNER?'All group expenses':'Group expenses you are in',sm.total)+st('You paid',sm.paid)+st('Your share',sm.share)+st('You are owed',sm.owedToMe,'t-g')+st('You owe',sm.iOwe,'t-r')+
+    '<div class="stat"><div class="lb">Status</div><div class="vl" style="font-size:14px;line-height:1.5">'+sm.open+' open<br>'+sm.partial+' partly settled<br>'+sm.settled+' settled</div></div></div>';
+  const bp=sm.byPerson||{},names=Object.keys(bp).sort((a,b)=>pidx(a)-pidx(b));
+  if(names.length)h+='<div class="card"><details><summary>Totals by person</summary><div class="gt c5 head"><span>Person</span><span>Paid</span><span>Share</span><span>Owed</span><span>Owes</span></div>'+names.map(k=>'<div class="gt c5"><span>'+esc(nm(k))+'</span><span>'+fm(bp[k].paid)+'</span><span>'+fm(bp[k].share)+'</span><span class="t-g">'+fm(bp[k].owed)+'</span><span class="t-r">'+fm(bp[k].owes)+'</span></div>').join('')+'</details></div>';
+  h+='<div class="pills">'+[['all','All'],['Open','Open'],['Partial','Partly settled'],['Settled','Settled']].map(f=>'<button class="pill '+(GFILTER===f[0]?'on':'')+'" data-gf="'+f[0]+'">'+f[1]+'</button>').join('')+'</div>';
+  const list=all.filter(e=>GFILTER==='all'||e.status===GFILTER);
+  h+=list.map(e=>'<div class="card gx" data-gx="open" data-id="'+esc(e.id)+'"><div class="rowtop"><b>'+esc(e.title)+'</b><b>'+fm(e.total)+'</b></div><div class="sub">'+esc(fd(e.date))+' · '+(e.method==='equal'?'equal split':'custom split')+' · '+e.payers.length+' paid · '+e.shares.length+' sharing</div><div class="rowtop" style="margin-top:8px;align-items:center">'+badge(e.status)+posText(myBal(e))+'</div></div>').join('')||'<div class="card empty">Nothing in this filter.</div>';
+  v.innerHTML=h;
+}
+function payLine(e,p){
+  const can=OWNER||p.from===S.me||p.to===S.me;
+  return '<div class="ent"><div class="l">'+esc(nm(p.from))+' '+verb(p.from,'pay','pays')+' '+esc(nl(p.to))+' <b>'+fm(p.amount)+'</b></div>'+
+    (can?'<button class="sm" data-gp="1" data-eid="'+esc(e.id)+'" data-from="'+esc(p.from)+'" data-to="'+esc(p.to)+'" data-amt="'+p.amount+'">Record payment</button>':'')+'</div>';
+}
+function settlementRow(t,title,withVoid){
+  const dead=t.status!=='Active';
+  return '<div class="ent" style="'+(dead?'opacity:.55;':'')+'"><div class="l"><div style="'+(dead?'text-decoration:line-through':'')+'">'+esc(nm(t.from))+' paid '+esc(nl(t.to))+' <b>'+fm(t.amount)+'</b></div><div class="sub">'+esc(fd(t.date))+(title?' · '+esc(title):'')+(t.note?' · '+esc(t.note):'')+(dead?' · voided':'')+'</div>'+
+    (withVoid&&!dead&&t.canVoid?'<button class="sm ghost" data-gv="'+esc(t.id)+'">Void</button>':'')+'</div></div>';
+}
+function groupDetailHtml(e){
+  let h='<div class="rowtop" style="align-items:flex-start"><h2 style="margin:0 8px 0 0">'+esc(e.title)+'</h2><button class="sm ghost" style="margin:0" data-gd="close">Close</button></div>';
+  h+='<div class="sub">'+esc(fd(e.date))+' · '+(e.method==='equal'?'Split equally':'Custom split')+' · added by '+esc(nl(e.createdBy))+'</div>';
+  h+='<div style="margin:10px 0 4px">'+badge(e.status)+' <b style="margin-left:6px;font-size:18px">'+fm(e.total)+'</b> <span class="sub">total · '+fm(e.outstanding)+' still to be paid</span></div>';
+  if(e.notes)h+='<div class="ins info">'+esc(e.notes)+'</div>';
+  h+='<h3>Paid, share and balance</h3><div class="gt head"><span>Person</span><span>Paid</span><span>Share</span><span>Balance</span></div>'+
+    e.balances.map(b=>'<div class="gt"><span>'+esc(nm(b.person))+'</span><span>'+fm(b.paid)+'</span><span>'+fm(b.share)+'</span><span class="'+(b.net>0?'t-g':b.net<0?'t-r':'')+'">'+(b.net>0?'+':'')+fm(b.net)+'</span></div>').join('')+
+    '<div class="sub" style="margin-top:6px">Balance = paid minus share. Plus means they should receive money, minus means they owe.</div>';
+  const owing=e.balances.filter(b=>b.owed>0);
+  h+='<h3>What people still owe</h3>'+(owing.length?owing.map(b=>{const p=b.owed>0?Math.min(100,b.paidBack/b.owed*100):100;
+    return '<div class="row"><div class="rowtop"><span>'+esc(nm(b.person))+'</span><span>'+(b.remaining<0?fm(-b.remaining)+' remaining':'<span class="t-g">Paid in full</span>')+'</span></div><div class="track"><div class="fill g" style="width:'+p+'%"></div></div><div class="sub">Owed '+fm(b.owed)+' · paid so far '+fm(b.paidBack)+'</div></div>';}).join(''):'<div class="sub">Nobody owes anything on this expense.</div>');
+  if(e.plan.length)h+='<h3>Suggested payments</h3>'+e.plan.map(p=>payLine(e,p)).join('')+'<div class="sub">These are suggestions only. Balances change when a payment is recorded.</div>';
+  h+='<h3>Payments recorded</h3>'+(e.settlements.length?e.settlements.map(t=>settlementRow(t,'',true)).join(''):'<div class="sub">No payments recorded yet.</div>');
+  if(e.canEdit)h+='<div class="grid2" style="margin-top:16px"><button class="ghost" data-gd="edit">Edit</button><button class="danger" data-gd="del">Delete</button></div>';
+  return h;
+}
+function openGroup(id){
+  const e=(S.groups.expenses||[]).find(x=>x.id===id);if(!e)return;
+  GD=id;$('sheet').innerHTML=groupDetailHtml(e);$('ov').style.display='flex';
+}
+$('sheet').addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-gd],[data-gp],[data-gv]');if(!b)return;
+  const e=(S.groups.expenses||[]).find(x=>x.id===GD);
+  if(b.dataset.gp){payModal(GD,b.dataset.from,b.dataset.to,Number(b.dataset.amt),true);return;}
+  if(b.dataset.gv){if(confirm('Void this payment? It stays in the history but no longer counts, so the balance goes back up.'))call('gVoid',{id:b.dataset.gv},r=>{S.groups=r.groups;render();openGroup(GD);toast('Payment voided');},b);return;}
+  const a=b.dataset.gd;
+  if(a==='close')closeModal();
+  else if(a==='edit'&&e){closeModal();openWizard(e);}
+  else if(a==='del'&&e){
+    const k=e.settlements.filter(t=>t.status==='Active').length;
+    if(confirm('Delete "'+e.title+'"?\n\n'+(k?k+' recorded payment(s) will be voided (kept in history). ':'')+'Everyone\'s balances for this expense will be removed. This cannot be undone from the app.'))
+      call('gDelete',{id:e.id},r=>{S.groups=r.groups;closeModal();render();toast('Group expense deleted');},b);
+  }
+});
+function payModal(eid,from,to,amt,back){
+  const e=(S.groups.expenses||[]).find(x=>x.id===eid);if(!e)return;
+  const debtors=e.balances.filter(b=>b.remaining<0).map(b=>b.person),creditors=e.balances.filter(b=>b.remaining>0).map(b=>b.person);
+  if(!debtors.length||!creditors.length)return toast('Nothing left to pay on this expense',true);
+  const cid=uuid();
+  modal({title:'Record a payment',saveText:'Record payment',fields:[
+    {id:'from',label:'Who paid',options:debtors,value:debtors.indexOf(from)>=0?from:debtors[0]},
+    {id:'to',label:'Who received',options:creditors,value:creditors.indexOf(to)>=0?to:creditors[0]},
+    {id:'amount',label:'Amount (a part payment is fine)',type:'number',value:amt},
+    {id:'date',label:'Date',type:'date',value:today()},{id:'note',label:'Note (optional)',value:''}],
+    save:(v,b)=>{
+      const a=toC(v.amount);if(!(a>0))return toast('Enter an amount above 0 (up to 2 decimals)',true);
+      const bf=e.balances.find(x=>x.person===v.from),bt=e.balances.find(x=>x.person===v.to);
+      if(a>Math.round(-bf.remaining*100))return toast(nm(v.from)+' only owe'+(v.from===S.me?'':'s')+' '+fm(-bf.remaining)+' on this expense',true);
+      if(a>Math.round(bt.remaining*100))return toast(nm(v.to)+' '+verb(v.to,'are','is')+' only owed '+fm(bt.remaining)+' on this expense',true);
+      call('gSettle',{id:eid,from:v.from,to:v.to,amount:v.amount,date:v.date,note:v.note,cid:cid},r=>{S.groups=r.groups;closeModal();render();toast('Payment recorded');if(back)openGroup(eid);},b);
+    }});
+  $('m_cancel').onclick=()=>{if(back)openGroup(eid);else closeModal();};
+}
+function vSettle(v){
+  const G=S.groups||{},sm=G.summary||{},open=(G.expenses||[]).filter(e=>e.status!=='Settled'),hist=G.history||[];
+  let h='<div class="grid2" style="margin-bottom:6px"><div class="stat"><div class="lb">You are owed</div><div class="vl t-g">'+fm(sm.owedToMe)+'</div></div><div class="stat"><div class="lb">You owe</div><div class="vl t-r">'+fm(sm.iOwe)+'</div></div></div><div class="sub" style="margin-bottom:6px">Across group expenses that are not fully settled.</div>';
+  h+='<h3>To settle</h3>'+(open.length?open.map(e=>'<div class="card"><div class="rowtop gx" data-gx="open" data-id="'+esc(e.id)+'"><b>'+esc(e.title)+'</b>'+badge(e.status)+'</div><div class="sub">'+esc(fd(e.date))+' · '+fm(e.outstanding)+' still to be paid</div>'+e.plan.map(p=>payLine(e,p)).join('')+'</div>').join(''):'<div class="card empty">Nothing to settle. Every group expense is paid up.</div>');
+  h+='<h3>Payment history</h3>'+(hist.length?'<div class="card">'+hist.map(t=>settlementRow(t,t.title,true)).join('')+'</div>':'<div class="card empty">No payments recorded yet.</div>');
+  v.innerHTML=h;
+}
+$('view').addEventListener('click',e=>{
+  const f=e.target.closest('[data-gf]');if(f){GFILTER=f.dataset.gf;render();return;}
+  const x=e.target.closest('[data-gx]');
+  if(x){if(x.dataset.gx==='new')openWizard();else openGroup(x.dataset.id);return;}
+  const p=e.target.closest('[data-gp]');if(p){payModal(p.dataset.eid,p.dataset.from,p.dataset.to,Number(p.dataset.amt),false);return;}
+  const g=e.target.closest('[data-gv]');
+  if(g&&confirm('Void this payment? It stays in the history but no longer counts.'))call('gVoid',{id:g.dataset.gv},r=>{S.groups=r.groups;render();toast('Payment voided');},g);
+});
+
+// ----- create / edit wizard: details, participants, who paid, split, review
+const WSTEPS=['Details','Participants','Who paid','Split','Review'];
+function openWizard(e){
+  GW=e?{step:1,id:e.id,expectUpdated:e.updatedAt,cid:null,title:e.title,date:e.date,total:String(e.total),notes:e.notes||'',parts:e.shares.map(x=>x.person),
+        payers:e.payers.map(x=>({person:x.person,amount:String(x.amount)})),method:e.method,shares:Object.fromEntries(e.shares.map(x=>[x.person,String(x.amount)])),hasPay:e.settlements.some(t=>t.status==='Active')}
+      :{step:1,id:null,expectUpdated:null,cid:uuid(),title:'',date:today(),total:'',notes:'',parts:[S.me],payers:[{person:S.me,amount:''}],method:'equal',shares:{},hasPay:false};
+  wizRender();
+}
+function wizClose(force){
+  if(!force&&GW&&(GW.title||GW.total)&&!confirm('Discard this group expense?'))return;
+  GW=null;$('wiz').style.display='none';$('wiz').innerHTML='';
+}
+function wzSortParts(){GW.parts.sort((a,b)=>pidx(a)-pidx(b));}
+function wzErr(step){
+  const T=toC(GW.total);
+  if(!GW.title.trim())return 'Enter a title for the expense';
+  if(!GW.date)return 'Pick a date';
+  if(!(T>0))return 'Enter a total above 0 (up to 2 decimals)';
+  if(step<2)return '';
+  if(!GW.parts.length)return 'Pick at least one participant';
+  if(step<3)return '';
+  const seen={};let sum=0;
+  for(const r of GW.payers){
+    if(!r.person)return 'Choose who paid on every row';
+    if(seen[r.person])return nm(r.person)+' is listed twice. Combine them into one row';
+    seen[r.person]=1;
+    const c=toC(r.amount);if(!(c>0))return 'Enter the amount paid by '+nm(r.person);
+    sum+=c;
+  }
+  if(sum!==T)return 'Payments add up to '+fm(sum/100)+' but the total is '+fm(T/100);
+  if(step<4)return '';
+  if(GW.method==='custom'){
+    let s2=0;for(const p of GW.parts){const c=toC(GW.shares[p]);if(!(c>0))return 'Enter the share of '+nm(p);s2+=c;}
+    if(s2!==T)return 'Shares add up to '+fm(s2/100)+' but the total is '+fm(T/100);
+  }
+  if(!OWNER&&GW.parts.indexOf(S.me)<0&&!GW.payers.some(r=>r.person===S.me))return 'You can only add expenses that involve you';
+  return '';
+}
+function wzFigures(){
+  const T=toC(GW.total),paid={},share={};
+  GW.payers.forEach(r=>{if(r.person)paid[r.person]=(paid[r.person]||0)+(toC(r.amount)||0);});
+  if(GW.method==='equal'){if(T>0&&GW.parts.length)eqShares(GW.parts,T).forEach(x=>{share[x.person]=x.c;});}
+  else GW.parts.forEach(p=>{share[p]=toC(GW.shares[p])||0;});
+  const names=Array.from(new Set(Object.keys(paid).concat(Object.keys(share)))).sort((a,b)=>pidx(a)-pidx(b));
+  return {T:T,paid:paid,share:share,names:names};
+}
+function wz1(){
+  return '<label style="margin-top:0">What was it for?</label><input id="w_title" type="text" maxlength="120" placeholder="e.g. Family dinner, electricity bill" value="'+esc(GW.title)+'">'+
+    '<label>Date</label><input id="w_date" type="date" value="'+esc(GW.date)+'">'+
+    '<label>Total amount</label><input id="w_total" type="number" inputmode="decimal" step="any" placeholder="0" value="'+esc(GW.total)+'">'+
+    '<label>Notes (optional)</label><input id="w_notes" type="text" maxlength="300" placeholder="Anything worth remembering" value="'+esc(GW.notes)+'">'+
+    (GW.id?'<div class="ins info" style="margin-top:14px">You are editing an existing expense. Balances are recalculated when you save.'+(GW.hasPay?' Recorded payments are kept if they still fit.':'')+'</div>':'');
+}
+function wz2(){
+  return '<div class="sub" style="margin-bottom:10px">Who shared in this expense? (Pick everyone who should bear part of the cost.)</div>'+
+    S.people.map(p=>'<label class="chk"><input type="checkbox" data-chk="'+esc(p)+'"'+(GW.parts.indexOf(p)>=0?' checked':'')+'><span>'+esc(p)+(p===S.me?' (you)':'')+'</span></label>').join('')+
+    '<button class="ghost" style="margin-top:4px" data-w="all">Select everyone</button>';
+}
+function wz3(){
+  return '<div class="sub" style="margin-bottom:10px">Who paid, and how much did each person pay? Several people can pay toward one expense.</div>'+
+    GW.payers.map((r,i)=>'<div class="prow"><select data-pay-sel="'+i+'"><option value="">Who paid?</option>'+S.people.map(p=>'<option'+(p===r.person?' selected':'')+'>'+esc(p)+'</option>').join('')+'</select><input type="number" inputmode="decimal" step="any" placeholder="0" value="'+esc(r.amount)+'" data-pay-amt="'+i+'">'+(GW.payers.length>1?'<button class="xbtn" data-w="rmpayer" data-i="'+i+'" aria-label="Remove payer">×</button>':'<span></span>')+'</div>').join('')+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px"><button class="ghost sm" style="margin:0" data-w="addpayer">+ Add another payer</button>'+(GW.payers.length===1?'<button class="ghost sm" style="margin:0" data-w="fullpay">Paid the full amount</button>':'')+'</div><div id="wzPaid" class="ins info"></div>';
+}
+function wz4(){
+  let h='<div class="seg" style="margin-bottom:12px"><button class="'+(GW.method==='equal'?'on':'')+'" data-w="method" data-m="equal">Equal split</button><button class="'+(GW.method==='custom'?'on':'')+'" data-w="method" data-m="custom">Custom split</button></div>';
+  if(GW.method==='equal'){
+    const T=toC(GW.total),sh=eqShares(GW.parts,T),base=Math.floor(T/GW.parts.length),extra=T-base*GW.parts.length;
+    h+='<div class="gt head" style="grid-template-columns:2fr 1fr"><span>Person</span><span>Share</span></div>'+sh.map(x=>'<div class="gt" style="grid-template-columns:2fr 1fr"><span>'+esc(nm(x.person))+'</span><span>'+fm(x.c/100)+'</span></div>').join('')+
+       '<div class="sub" style="margin-top:8px">'+fm(T/100)+' divided between '+GW.parts.length+' '+(GW.parts.length===1?'person':'people')+'.'+(extra?' The extra '+extra+' cent'+(extra>1?'s are':' is')+' given to the first '+(extra>1?'people':'person')+' in the family list so the shares add up exactly.':'')+' To change who shares, go back to Participants.</div>';
+  } else {
+    h+='<div class="sub" style="margin-bottom:10px">Enter each person\'s share. They must add up to the total.</div>'+
+      GW.parts.map(p=>'<div class="prow"><span>'+esc(nm(p))+'</span><input type="number" inputmode="decimal" step="any" placeholder="0" value="'+esc(GW.shares[p]||'')+'" data-share="'+esc(p)+'">'+(GW.parts.length>1?'<button class="xbtn" data-w="rmpart" data-p="'+esc(p)+'" aria-label="Remove">×</button>':'<span></span>')+'</div>').join('');
+    const rest=S.people.filter(p=>GW.parts.indexOf(p)<0);
+    if(rest.length)h+='<div class="prow" style="grid-template-columns:1fr auto"><select id="w_addsel">'+rest.map(p=>'<option>'+esc(p)+'</option>').join('')+'</select><button class="ghost sm" style="margin:0" data-w="addpart">+ Add person</button></div>';
+    h+='<div id="wzShare" class="ins info" style="margin-top:6px"></div>';
+  }
+  return h;
+}
+function wz5(){
+  const f=wzFigures(),err=wzErr(5);
+  let rem={},tp=0,ts=0;f.names.forEach(p=>{const n2=(f.paid[p]||0)-(f.share[p]||0);rem[p]=n2;tp+=f.paid[p]||0;ts+=f.share[p]||0;});
+  let h='<div class="rowtop"><b style="font-size:17px">'+esc(GW.title)+'</b><b>'+fm(f.T/100)+'</b></div><div class="sub">'+esc(fd(GW.date))+' · '+(GW.method==='equal'?'equal split':'custom split')+(GW.notes?' · '+esc(GW.notes):'')+'</div>';
+  h+='<div class="gt head" style="margin-top:12px"><span>Person</span><span>Paid</span><span>Share</span><span>Balance</span></div>'+
+    f.names.map(p=>{const n2=rem[p];return '<div class="gt"><span>'+esc(nm(p))+'</span><span>'+fm((f.paid[p]||0)/100)+'</span><span>'+fm((f.share[p]||0)/100)+'</span><span class="'+(n2>0?'t-g':n2<0?'t-r':'')+'">'+(n2>0?'+':'')+fm(n2/100)+'</span></div>';}).join('')+
+    '<div class="gt tot"><span>Total</span><span>'+fm(tp/100)+'</span><span>'+fm(ts/100)+'</span><span>'+fm((tp-ts)/100)+'</span></div>';
+  h+='<div class="ins '+(tp===f.T&&ts===f.T?'ok':'bad')+'">Paid '+fm(tp/100)+' · Shares '+fm(ts/100)+' · Total '+fm(f.T/100)+(tp===f.T&&ts===f.T?' — everything adds up':' — does not add up')+'</div>';
+  const plan=planC(rem);
+  h+='<h3>Who pays whom</h3>'+(plan.length?plan.map(x=>'<div class="ent"><div class="l">'+esc(nm(x.from))+' '+verb(x.from,'pay','pays')+' '+esc(nl(x.to))+' <b>'+fm(x.c/100)+'</b></div></div>').join('')+'<div class="sub">Suggested only. Nothing counts as paid until you record a payment.</div>':'<div class="sub">Nobody owes anyone.</div>');
+  if(GW.hasPay)h+='<div class="ins warn" style="margin-top:10px">This expense has recorded payments. If the new amounts no longer fit them, you will be asked before they are voided.</div>';
+  if(err)h+='<div class="ins bad" style="margin-top:10px">'+esc(err)+'</div>';
+  return h;
+}
+function wizRender(){
+  if(!GW)return;
+  const st=GW.step;
+  const body=[wz1,wz2,wz3,wz4,wz5][st-1]();
+  $('wiz').innerHTML='<div class="wz-head"><button class="iconbtn" data-w="close" aria-label="Close"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="flex:1;min-width:0"><div style="font-weight:800;font-size:17px">'+(GW.id?'Edit group expense':'New group expense')+'</div><div class="sub">Step '+st+' of 5 · '+WSTEPS[st-1]+'</div></div></div>'+
+    '<div class="wz-prog">'+[1,2,3,4,5].map(i=>'<i class="'+(i<=st?'on':'')+'"></i>').join('')+'</div><div class="wz-body">'+body+'</div>'+
+    '<div class="wz-foot"><div>'+(st>1?'<button class="ghost" data-w="back">Back</button>':'<button class="ghost" data-w="close">Cancel</button>')+(st<5?'<button data-w="next">Next</button>':'<button id="wzSave" data-w="save"'+(wzErr(5)?' disabled':'')+'>Save expense</button>')+'</div></div>';
+  $('wiz').style.display='flex';wzUpdate();
+}
+function wzUpdate(){
+  const T=toC(GW.total);
+  const p=$('wzPaid');
+  if(p){let sum=0;GW.payers.forEach(r=>{sum+=toC(r.amount)||0;});const d=T-sum;
+    p.className='ins '+(d===0?'ok':d>0?'warn':'bad');
+    p.textContent=d===0?'Paid '+fm(sum/100)+' of '+fm(T/100)+'. Everything is covered.':d>0?'Paid '+fm(sum/100)+' of '+fm(T/100)+'. Still to assign: '+fm(d/100):'Paid '+fm(sum/100)+' of '+fm(T/100)+'. Excess: '+fm(-d/100);}
+  const q=$('wzShare');
+  if(q){let sum=0;GW.parts.forEach(x=>{sum+=toC(GW.shares[x])||0;});const d=T-sum;
+    q.className='ins '+(d===0?'ok':d>0?'warn':'bad');
+    q.textContent=d===0?'Shares add up to '+fm(sum/100)+'. Everything is covered.':d>0?'Shares add up to '+fm(sum/100)+' of '+fm(T/100)+'. Remaining: '+fm(d/100):'Shares add up to '+fm(sum/100)+' of '+fm(T/100)+'. Excess: '+fm(-d/100);}
+}
+function wzPayload(){
+  const p={title:GW.title.trim(),date:GW.date,total:Number(GW.total),notes:GW.notes,method:GW.method,
+    payers:GW.payers.map(r=>({person:r.person,amount:Number(r.amount)}))};
+  if(GW.method==='equal')p.participants=GW.parts.slice();else p.shares=GW.parts.map(x=>({person:x,amount:Number(GW.shares[x])}));
+  if(GW.id){p.id=GW.id;p.expectUpdated=GW.expectUpdated;}else p.cid=GW.cid;
+  return p;
+}
+function wzSave(resolve){
+  const err=wzErr(5);if(err)return toast(err,true);
+  const p=wzPayload();if(resolve)p.resolve=resolve;
+  call('gSave',p,r=>{S.groups=r.groups;wizClose(true);render();toast(r.dup?'Already saved':'Group expense saved'+(r.voided?' ('+r.voided+' payment'+(r.voided>1?'s':'')+' voided)':''));},$('wzSave'),null,e=>{
+    if(/^\[conflict\]/.test(e.message)){
+      if(confirm(e.message.replace('[conflict] ','')+'\n\nSave anyway? Those payments will be voided (kept in history as voided) so the balances stay correct.'))wzSave('void');
+      return true;
+    }
+    return false;
+  });
+}
+$('wiz').addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-w]');if(!b||!GW)return;
+  const a=b.dataset.w;
+  if(a==='close')wizClose(false);
+  else if(a==='back'){GW.step--;wizRender();}
+  else if(a==='next'){const err=wzErr(GW.step);if(err)return toast(err,true);GW.step++;if(GW.step===4&&GW.method==='custom')GW.parts.forEach(p=>{if(GW.shares[p]==null)GW.shares[p]='';});wizRender();$('wiz').querySelector('.wz-body').scrollTop=0;}
+  else if(a==='save')wzSave();
+  else if(a==='all'){GW.parts=S.people.slice();wizRender();}
+  else if(a==='addpayer'){const used=GW.payers.map(r=>r.person),nx=S.people.find(p=>used.indexOf(p)<0);if(!nx)return toast('Everyone is already listed',true);GW.payers.push({person:nx,amount:''});wizRender();}
+  else if(a==='rmpayer'){GW.payers.splice(Number(b.dataset.i),1);wizRender();}
+  else if(a==='fullpay'){GW.payers[0].amount=GW.total;wizRender();}
+  else if(a==='method'){GW.method=b.dataset.m;if(GW.method==='custom')GW.parts.forEach(p=>{if(GW.shares[p]==null||GW.shares[p]==='')GW.shares[p]='';});wizRender();}
+  else if(a==='rmpart'){GW.parts=GW.parts.filter(x=>x!==b.dataset.p);delete GW.shares[b.dataset.p];wizRender();}
+  else if(a==='addpart'){const v=$('w_addsel').value;if(v&&GW.parts.indexOf(v)<0){GW.parts.push(v);wzSortParts();GW.shares[v]='';wizRender();}}
+});
+$('wiz').addEventListener('input',ev=>{
+  const t=ev.target;if(!GW)return;
+  if(t.id==='w_title')GW.title=t.value;else if(t.id==='w_date')GW.date=t.value;else if(t.id==='w_total')GW.total=t.value;else if(t.id==='w_notes')GW.notes=t.value;
+  else if(t.dataset.payAmt!=null){GW.payers[Number(t.dataset.payAmt)].amount=t.value;wzUpdate();}
+  else if(t.dataset.share!=null){GW.shares[t.dataset.share]=t.value;wzUpdate();}
+});
+$('wiz').addEventListener('change',ev=>{
+  const t=ev.target;if(!GW)return;
+  if(t.dataset.chk!=null){
+    const p=t.dataset.chk;
+    if(t.checked){if(GW.parts.indexOf(p)<0)GW.parts.push(p);}else GW.parts=GW.parts.filter(x=>x!==p);
+    wzSortParts();
+  } else if(t.dataset.paySel!=null){
+    const i=Number(t.dataset.paySel),v=t.value;
+    if(v&&GW.payers.some((r,k)=>k!==i&&r.person===v)){toast(v+' is already listed as a payer',true);t.value=GW.payers[i].person;return;}
+    GW.payers[i].person=v;
+  }
+});
+
 // ---------- Home
 function salaryCard(){
   const s=S.summary;
@@ -589,6 +925,9 @@ function vHome(v){
   const rem=[];
   othersOf().forEach(p=>{const x=pairNet(p);if(x>0)rem.push({t:'ok',x:p+' owes you '+n(x)});else if(x<0)rem.push({t:'bad',x:'You owe '+p+' '+n(-x)});});
   if(s)s.insights.filter(i=>i.type==='bad'||i.type==='warn').slice(0,2).forEach(i=>rem.push({t:i.type,x:i.text}));
+  const gs=(S.groups&&S.groups.summary)||{};
+  if(gs.iOwe>0)rem.push({t:'bad',x:'You owe '+fm(gs.iOwe)+' across group expenses'});
+  if(gs.owedToMe>0)rem.push({t:'ok',x:'You are owed '+fm(gs.owedToMe)+' across group expenses'});
   (S.goals||[]).filter(g=>g.status!=='Done'&&g.daysLeft!=null&&g.daysLeft<=7).forEach(g=>rem.push({t:g.daysLeft<0?'bad':'warn',x:'Goal "'+g.name+'" '+(g.daysLeft<0?'is overdue':'is due in '+g.daysLeft+' days')}));
   (S.fgoals||[]).filter(g=>g.status!=='Done'&&g.daysLeft!=null&&g.daysLeft<=7).forEach(g=>rem.push({t:g.daysLeft<0?'bad':'warn',x:'Family goal "'+g.name+'" '+(g.daysLeft<0?'is overdue':'is due in '+g.daysLeft+' days')}));
   h+='<div class="card"><h2>Reminders</h2>'+(rem.map(r=>'<div class="ins '+r.t+'">'+esc(r.x)+'</div>').join('')||'<div class="empty">Nothing needs your attention.</div>')+'</div>';
@@ -820,12 +1159,92 @@ function bindAna(){
   const c=$('anCat');if(c)c.onchange=()=>{AN.cat=c.value;AN.ents=null;render();};
 }
 
+// ---------- App lock: a PIN kept on this phone only (never sent to the server)
+const PIN_ITER=150000;
+let LOCKED=false,PINBUF='',hiddenAt=0;
+function b64e(u8){let t='';for(let i=0;i<u8.length;i++)t+=String.fromCharCode(u8[i]);return btoa(t);}
+function b64d(t){const r=atob(t),u=new Uint8Array(r.length);for(let i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u;}
+function lockOn(){return !!localStorage.getItem('pinh');}
+function lockOK(){return !!(window.crypto&&crypto.subtle&&crypto.getRandomValues&&window.TextEncoder);}
+async function pinHash(pin,salt){
+  const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:b64d(salt),iterations:PIN_ITER,hash:'SHA-256'},k,256);
+  return b64e(new Uint8Array(bits));
+}
+async function pinSet(pin){
+  const salt=b64e(crypto.getRandomValues(new Uint8Array(16)));
+  localStorage.setItem('pins',salt);localStorage.setItem('pinl',String(pin.length));localStorage.setItem('pinh',await pinHash(pin,salt));localStorage.removeItem('pinf');
+}
+async function pinCheck(pin){return (await pinHash(pin,localStorage.getItem('pins')||''))===localStorage.getItem('pinh');}
+function pinFail(){
+  let f={n:0,until:0};try{f=JSON.parse(localStorage.getItem('pinf')||'')||f;}catch(e){}
+  return f;
+}
+function lockWait(){const f=pinFail(),left=f.until-Date.now();return left>0?Math.ceil(left/1000):0;}
+function renderLock(msg){
+  const name=localStorage.getItem('bn'),len=Number(localStorage.getItem('pinl'))||4;
+  $('lock').innerHTML='<div class="lk-in"><img class="logo" src="icon-192.png" alt=""><div class="lk-title">'+(name?'Welcome back, '+esc(name):'Welcome back')+'</div><div class="sub">Enter your PIN to open Hisab</div>'+
+    '<div class="lk-dots">'+Array.from({length:len},(_,i)=>'<i class="'+(i<PINBUF.length?'on':'')+'"></i>').join('')+'</div><div class="lk-msg">'+esc(msg||'')+'</div>'+
+    '<div class="lk-pad">'+['1','2','3','4','5','6','7','8','9','','0','⌫'].map(k=>k===''?'<span></span>':'<button data-k="'+k+'" aria-label="'+(k==='⌫'?'Delete':k)+'">'+k+'</button>').join('')+'</div>'+
+    '<button class="lk-forgot" data-k="forgot">Forgot PIN?</button></div>';
+}
+function showLock(){if(!lockOn())return;LOCKED=true;PINBUF='';$('lock').classList.remove('hide');renderLock('');}
+function hideLock(){LOCKED=false;PINBUF='';$('lock').classList.add('hide');$('lock').innerHTML='';}
+async function lockSubmit(){
+  const w=lockWait();if(w){PINBUF='';renderLock('Too many wrong tries. Wait '+w+' seconds.');return;}
+  const pin=PINBUF;
+  let good=false;try{good=await pinCheck(pin);}catch(e){}
+  if(good){localStorage.removeItem('pinf');hideLock();return;}
+  const f=pinFail();f.n=(f.n||0)+1;
+  if(f.n>=5)f.until=Date.now()+(f.n>=10?300000:30000);
+  localStorage.setItem('pinf',JSON.stringify(f));
+  PINBUF='';renderLock(f.n>=5?'Too many wrong tries. Wait '+lockWait()+' seconds.':'Wrong PIN. Try again.');
+}
+function lockKey(k){
+  if(!LOCKED)return;
+  const len=Number(localStorage.getItem('pinl'))||4;
+  if(k==='forgot'){PINBUF='';renderLock('Open your personal link again (the one you were sent). That removes the lock on this phone, then you can set a new PIN from the menu.');return;}
+  if(k==='⌫'||k==='Backspace'){PINBUF=PINBUF.slice(0,-1);renderLock('');return;}
+  if(!/^\d$/.test(k)||PINBUF.length>=len)return;
+  PINBUF+=k;renderLock('');
+  if(PINBUF.length===len)lockSubmit();
+}
+$('lock').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(b)lockKey(b.dataset.k);});
+document.addEventListener('keydown',e=>{if(LOCKED&&(/^\d$/.test(e.key)||e.key==='Backspace'))lockKey(e.key);});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){hiddenAt=Date.now();return;}
+  if(lockOn()&&!LOCKED&&hiddenAt&&Date.now()-hiddenAt>60000)showLock();   // lock again after a minute away
+});
+function openLockSettings(){
+  if(!lockOK()){$('sheet').innerHTML='<h2>App lock</h2><div class="sub">This browser cannot keep a PIN safely, so the app lock is not available here.</div><button class="full ghost" data-pl="close">Close</button>';$('ov').style.display='flex';return;}
+  const on=lockOn();
+  $('sheet').innerHTML='<h2>App lock</h2><div class="sub" style="margin-bottom:6px">Ask for a PIN whenever Hisab opens, or comes back after a minute away. The PIN stays on this phone only and is never sent anywhere. Your name on the lock screen comes from your personal link.</div>'+
+    (on?'<button class="full" data-pl="now">Lock now</button><button class="full ghost" data-pl="change">Change PIN</button><button class="full danger" data-pl="off">Turn off</button>':'<button class="full" data-pl="set">Set a PIN</button>')+
+    '<button class="full ghost" data-pl="close">Close</button>';
+  $('ov').style.display='flex';
+}
+$('sheet').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pl]');if(!b)return;const a=b.dataset.pl;
+  const okPin=v=>/^\d{4,6}$/.test(v);
+  const msgBad='Use 4 to 6 digits';
+  if(a==='close')closeModal();
+  else if(a==='now'){closeModal();showLock();}
+  else if(a==='set')modal({title:'Set a PIN',saveText:'Turn on',fields:[{id:'p1',label:'Choose a PIN (4 to 6 digits)',type:'password',value:''},{id:'p2',label:'Type it again',type:'password',value:''}],
+    save:async(v,bb)=>{if(!okPin(v.p1))return toast(msgBad,true);if(v.p1!==v.p2)return toast('The two PINs do not match',true);await pinSet(v.p1);closeModal();toast('App lock is on');buildDrawer();}});
+  else if(a==='change')modal({title:'Change PIN',saveText:'Change',fields:[{id:'c',label:'Current PIN',type:'password',value:''},{id:'p1',label:'New PIN (4 to 6 digits)',type:'password',value:''},{id:'p2',label:'New PIN again',type:'password',value:''}],
+    save:async(v,bb)=>{if(!(await pinCheck(v.c).catch(()=>false)))return toast('Current PIN is wrong',true);if(!okPin(v.p1))return toast(msgBad,true);if(v.p1!==v.p2)return toast('The two PINs do not match',true);await pinSet(v.p1);closeModal();toast('PIN changed');}});
+  else if(a==='off')modal({title:'Turn off app lock',saveText:'Turn off',fields:[{id:'c',label:'Current PIN',type:'password',value:''}],
+    save:async(v,bb)=>{if(!(await pinCheck(v.c).catch(()=>false)))return toast('Current PIN is wrong',true);['pinh','pins','pinl','pinf'].forEach(k=>localStorage.removeItem(k));closeModal();toast('App lock is off');buildDrawer();}});
+});
+
 // ---------- start
 function init(r){
   Object.assign(S,r);
   ROLE=S.role||ROLE;OWNER=ROLE==='owner';
   S.me=S.name||S.me;
+  if(S.name)localStorage.setItem('bn',S.name);
   S.people=S.people||[];S.members=S.members||[];S.fgoals=S.fgoals||[];
+  if(!S.groups||!S.groups.expenses)S.groups={expenses:[],summary:{},history:[]};
   if(!S.ledger||!S.ledger.open)S.ledger={people:S.people,open:[],settled:[]};
   $('boot').style.display='none';
   if(!$('date').value)$('date').value=today();
@@ -838,6 +1257,8 @@ function init(r){
   getQ().forEach(it=>applyLocal(it.action,it.payload));
   render();updateBar();
 }
+if(lockOn())showLock();
+if(LOCK_RESET)setTimeout(()=>toast('The app lock on this phone was removed. Set a new PIN from the menu (App lock).'),2400);
 if(!KEY){$('boot').textContent='Open your personal link once (the one ending in ?k=...). After that the app remembers you.';}
 else{
   const c=localStorage.getItem('bc');
